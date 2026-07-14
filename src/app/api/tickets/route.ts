@@ -6,7 +6,7 @@ import {
 import { generateTicketNo, emitTicketChange, logNotification, buildAssignmentEmail } from '@/lib/ticket-utils'
 
 // GET /api/tickets — list tickets per RLS visibility (PRD §11.1, FR-3.1, FR-6.3)
-// Admin: all tickets; Technician: assigned + own issued; Teacher: own issued.
+// Admin: all tickets; Technician: assigned + own issued; Issuer: own issued.
 // Supports filters: status, category, location, assignedTo, q (search), since, limit
 export async function GET(req: NextRequest) {
   const user = await requirePasswordChanged()

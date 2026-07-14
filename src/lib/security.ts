@@ -10,7 +10,7 @@ import type { Profile } from '@prisma/client'
 // persistence backend.
 // ============================================================================
 
-export type Role = 'teacher' | 'technician' | 'admin'
+export type Role = 'issuer' | 'technician' | 'admin'
 
 export type SafeUser = Pick<
   Profile,
@@ -56,7 +56,7 @@ export async function requirePasswordChanged(): Promise<SafeUser | NextResponse>
  * Ticket access check mirroring PRD §11.1 RLS policy on `tickets`:
  *  - admin: SELECT/UPDATE all tickets
  *  - technician: SELECT/UPDATE tickets assigned_to them
- *  - teacher (issuer): SELECT tickets they issued (no UPDATE)
+ *  - issuer: SELECT tickets they issued (no UPDATE)
  */
 export function canAccessTicket(
   user: SafeUser,
@@ -102,11 +102,11 @@ export const schemas = {
   createUser: z.object({
     fullName: z.string().min(2, 'Name too short').max(100),
     email: z.string().email().max(254),
-    role: z.enum(['teacher', 'technician', 'admin']),
+    role: z.enum(['issuer', 'technician', 'admin']),
   }),
   updateUser: z.object({
     fullName: z.string().min(2).max(100).optional(),
-    role: z.enum(['teacher', 'technician', 'admin']).optional(),
+    role: z.enum(['issuer', 'technician', 'admin']).optional(),
     isActive: z.boolean().optional(),
   }),
   createTicket: z.object({

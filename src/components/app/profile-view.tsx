@@ -18,7 +18,7 @@ import {
 const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-primary/15 text-primary',
   technician: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
-  teacher: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+  issuer: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
 }
 
 export function ProfileView() {

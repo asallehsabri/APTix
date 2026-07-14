@@ -2,7 +2,7 @@
 // All requests are relative (Caddy routes them). Throws on non-2xx with the
 // server-provided error message.
 
-export type Role = 'teacher' | 'technician' | 'admin'
+export type Role = 'issuer' | 'technician' | 'admin'
 export type TicketStatus = 'issued' | 'in_progress' | 'resolved'
 
 export interface User {

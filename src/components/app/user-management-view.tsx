@@ -22,7 +22,7 @@ import {
 const ROLE_COLORS: Record<Role, string> = {
   admin: 'bg-primary/15 text-primary',
   technician: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
-  teacher: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+  issuer: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
 }
 
 export function UserManagementView() {
@@ -33,7 +33,7 @@ export function UserManagementView() {
   const [createOpen, setCreateOpen] = useState(false)
   const [newName, setNewName] = useState('')
   const [newEmail, setNewEmail] = useState('')
-  const [newRole, setNewRole] = useState<Role>('teacher')
+  const [newRole, setNewRole] = useState<Role>('issuer')
   const [creating, setCreating] = useState(false)
   const [tempPwd, setTempPwd] = useState<{ user: User; pwd: string } | null>(null)
   const [copied, setCopied] = useState(false)
@@ -65,7 +65,7 @@ export function UserManagementView() {
       toast.success('User created', { description: `${user.email} — share the temporary password securely.` })
       setTempPwd({ user, pwd: temporaryPassword })
       setCreateOpen(false)
-      setNewName(''); setNewEmail(''); setNewRole('teacher')
+      setNewName(''); setNewEmail(''); setNewRole('issuer')
       load()
     } catch (e) {
       toast.error('Failed to create user', { description: e instanceof Error ? e.message : '' })
@@ -178,7 +178,7 @@ export function UserManagementView() {
                       <Select value={u.role} onValueChange={(v) => changeRole(u, v as Role)} disabled={updatingId === u.id}>
                         <SelectTrigger className="h-7 text-xs bg-background/40 flex-1"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="teacher">Teacher</SelectItem>
+                          <SelectItem value="issuer">Issuer</SelectItem>
                           <SelectItem value="technician">Technician</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
@@ -226,7 +226,7 @@ export function UserManagementView() {
               <Select value={newRole} onValueChange={(v) => setNewRole(v as Role)}>
                 <SelectTrigger className="bg-background/40"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="teacher">Teacher</SelectItem>
+                  <SelectItem value="issuer">Issuer</SelectItem>
                   <SelectItem value="technician">Technician</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>

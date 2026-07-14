@@ -10,7 +10,7 @@ const SESSION_MAX_AGE = 60 * 60 * 8 // 8 hours of inactivity (PRD FR-1.7)
 export interface SessionPayload extends JwtPayload {
   userId: string
   email: string
-  role: 'teacher' | 'technician' | 'admin'
+  role: 'issuer' | 'technician' | 'admin'
 }
 
 /** Hash a plaintext password using bcrypt (PRD §5 Security) */

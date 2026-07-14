@@ -14,7 +14,7 @@ interface NavItem {
   id: View
   label: string
   icon: React.ComponentType<{ className?: string }>
-  roles?: ('teacher' | 'technician' | 'admin')[]
+  roles?: ('issuer' | 'technician' | 'admin')[]
 }
 
 const NAV: NavItem[] = [

@@ -26,11 +26,11 @@ async function main() {
     { fullName: 'Firdaus Rahman', email: 'firdaus@jtm.gov.my', role: 'technician', mustChange: false, active: true, pass: changedPass },
     { fullName: 'Ganesh Kumaran', email: 'ganesh@jtm.gov.my', role: 'technician', mustChange: false, active: true, pass: changedPass },
     { fullName: 'Wong Mei Ling', email: 'wongml@jtm.gov.my', role: 'technician', mustChange: false, active: true, pass: changedPass },
-    { fullName: 'Cikgu Aminah Yusof', email: 'aminah@jtm.gov.my', role: 'teacher', mustChange: false, active: true, pass: changedPass },
-    { fullName: 'Cikgu Rajesh Pillai', email: 'rajesh@jtm.gov.my', role: 'teacher', mustChange: false, active: true, pass: changedPass },
-    { fullName: 'Cikgu Siti Khadijah', email: 'siti.k@jtm.gov.my', role: 'teacher', mustChange: false, active: true, pass: changedPass },
-    { fullName: 'Encik Tan Chee Keong', email: 'tanchee@jtm.gov.my', role: 'teacher', mustChange: false, active: true, pass: changedPass },
-    { fullName: 'Puan Faridah Omar', email: 'faridah@jtm.gov.my', role: 'teacher', mustChange: false, active: false, pass: changedPass },
+    { fullName: 'Cikgu Aminah Yusof', email: 'aminah@jtm.gov.my', role: 'issuer', mustChange: false, active: true, pass: changedPass },
+    { fullName: 'Cikgu Rajesh Pillai', email: 'rajesh@jtm.gov.my', role: 'issuer', mustChange: false, active: true, pass: changedPass },
+    { fullName: 'Cikgu Siti Khadijah', email: 'siti.k@jtm.gov.my', role: 'issuer', mustChange: false, active: true, pass: changedPass },
+    { fullName: 'Encik Tan Chee Keong', email: 'tanchee@jtm.gov.my', role: 'issuer', mustChange: false, active: true, pass: changedPass },
+    { fullName: 'Puan Faridah Omar', email: 'faridah@jtm.gov.my', role: 'issuer', mustChange: false, active: false, pass: changedPass },
   ]
 
   const users: Record<string, string> = {}
@@ -194,7 +194,7 @@ async function main() {
   console.log('   Admin (must change pw):  asallehsabri@jtm.gov.my / Password@123')
   console.log('   Admin:                   norliza@jtm.gov.my / Pedas@2026')
   console.log('   Technician:              firdaus@jtm.gov.my / Pedas@2026')
-  console.log('   Teacher:                 aminah@jtm.gov.my / Pedas@2026')
+  console.log('   Issuer:                  aminah@jtm.gov.my / Pedas@2026')
 }
 
 main()

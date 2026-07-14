@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     where = { assignedToId: user.id }
   } else if (user.role === 'technician') {
     where = { OR: [{ issuedById: user.id }, { assignedToId: user.id }] }
-  } else if (user.role === 'teacher') {
+  } else if (user.role === 'issuer') {
     where = { issuedById: user.id }
   }
 

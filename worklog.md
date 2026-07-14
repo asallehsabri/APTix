@@ -65,3 +65,27 @@ Stage Summary:
 - ✅ Theme toggle (light/dark) working
 - ✅ Footer sticky behavior correct
 - ✅ Lint clean, dev server healthy
+
+---
+Task ID: rename-1
+Agent: Orchestrator
+Task: Rename "Teacher" role to "Issuer" throughout the system
+
+Work Log:
+- Updated Role type in src/lib/auth.ts, src/lib/security.ts, src/lib/api-client.ts: 'teacher' → 'issuer'
+- Updated zod validation schemas (createUser, updateUser) in security.ts
+- Updated API role checks: dashboard route (user.role === 'issuer'), login route (session cast), tickets route comment
+- Updated frontend role checks: dashboard-view, ticket-detail-view (back button routing), sidebar (NavItem roles type)
+- Updated user-management-view: ROLE_COLORS key, default newRole state, role dropdown labels (3 select items)
+- Updated profile-view: ROLE_COLORS key
+- Updated login-view: demo credentials hint "Teacher:" → "Issuer:"
+- Updated prisma/seed.ts: all 5 teacher users → issuer role + console output
+- Updated prisma/schema.prisma: default role + comment
+- Migrated existing DB: UPDATE profiles SET role='issuer' WHERE role='teacher' (5 rows migrated)
+- Verified: lint clean, issuer login works (aminah@jtm.gov.my → role:issuer), dashboard scoped correctly, User Management shows "Issuer" labels, create-user dropdown shows Issuer/Technician/Admin, no "Teacher" text remains anywhere in UI, no console/dev-log errors
+
+Stage Summary:
+- ✅ Full rename complete (data model + API + UI + seed + schema)
+- ✅ 5 existing issuer accounts migrated, 2 admins + 3 technicians unchanged
+- ✅ All role-based access control (RLS) still works correctly with new role value
+- ✅ Zero remaining "Teacher" references in source code

@@ -196,7 +196,7 @@ export function LoginView() {
             <span>Admin (must change):</span><span className="font-mono">asallehsabri@jtm.gov.my</span>
             <span>Admin:</span><span className="font-mono">norliza@jtm.gov.my / Pedas@2026</span>
             <span>Technician:</span><span className="font-mono">firdaus@jtm.gov.my / Pedas@2026</span>
-            <span>Teacher:</span><span className="font-mono">aminah@jtm.gov.my / Pedas@2026</span>
+            <span>Issuer:</span><span className="font-mono">aminah@jtm.gov.my / Pedas@2026</span>
           </div>
           <p className="mt-1.5 text-[10px]">Admin temp password: <span className="font-mono">Password@123</span></p>
         </div>

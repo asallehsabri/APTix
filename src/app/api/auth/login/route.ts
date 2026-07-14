@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     return fail('This account has been deactivated. Contact the ICT Unit.', 403)
   }
 
-  const token = signSession({ userId: user.id, email: user.email, role: user.role as 'teacher' | 'technician' | 'admin' })
+  const token = signSession({ userId: user.id, email: user.email, role: user.role as 'issuer' | 'technician' | 'admin' })
   await setSessionCookie(token)
 
   return ok({

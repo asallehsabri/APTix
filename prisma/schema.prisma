@@ -18,7 +18,7 @@ model Profile {
   fullName            String
   email               String   @unique
   passwordHash        String
-  role                String   @default("teacher") // teacher | technician | admin
+  role                String   @default("issuer") // issuer | technician | admin
   mustChangePassword  Boolean  @default(true)
   isActive            Boolean  @default(true)
   emailVerified       Boolean  @default(false)
