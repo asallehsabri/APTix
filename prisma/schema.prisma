@@ -1,0 +1,104 @@
+// APTix - ADTEC Pedas ICT Ticketing System
+// Prisma schema mirroring the Supabase/PostgreSQL data model defined in the PRD.
+// Tables: profiles, categories, tickets, ticket_status_history, notification_log
+// RLS-equivalent access control is enforced in the API layer (src/lib/security.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Application user profile (mirrors Supabase profiles table extending auth.users)
+model Profile {
+  id                  String   @id @default(cuid())
+  fullName            String
+  email               String   @unique
+  passwordHash        String
+  role                String   @default("teacher") // teacher | technician | admin
+  mustChangePassword  Boolean  @default(true)
+  isActive            Boolean  @default(true)
+  emailVerified       Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  createdBy           String?
+
+  issuedTickets       Ticket[] @relation("TicketIssuer")
+  assignedTickets     Ticket[] @relation("TicketAssignee")
+  assignedByTickets   Ticket[] @relation("TicketAssigner")
+  statusHistory       TicketStatusHistory[]
+
+  @@map("profiles")
+}
+
+/// Lookup table for ticket categories (seeded, admin-editable)
+model Category {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  tickets Ticket[]
+
+  @@map("categories")
+}
+
+/// ICT problem ticket
+model Ticket {
+  id            String   @id @default(cuid())
+  ticketNo      String   @unique
+  categoryId    Int
+  summary       String
+  location      String
+  reportedDate  DateTime
+  issuedById    String
+  assignedToId  String?
+  assignedById  String?
+  currentStatus String   @default("issued") // issued | in_progress | resolved
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  category      Category  @relation(fields: [categoryId], references: [id])
+  issuedBy      Profile   @relation("TicketIssuer", fields: [issuedById], references: [id])
+  assignedTo    Profile?  @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  assignedBy    Profile?  @relation("TicketAssigner", fields: [assignedById], references: [id])
+  history       TicketStatusHistory[]
+  notifications NotificationLog[]
+
+  @@index([currentStatus])
+  @@index([assignedToId])
+  @@index([issuedById])
+  @@map("tickets")
+}
+
+/// Append-only audit log of status changes and assignment events
+model TicketStatusHistory {
+  id        String   @id @default(cuid())
+  ticketId  String
+  status    String   // issued | in_progress | resolved | assigned
+  remarks   String?
+  actorId   String
+  changedAt DateTime @default(now())
+
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actor     Profile  @relation(fields: [actorId], references: [id])
+
+  @@index([ticketId])
+  @@map("ticket_status_history")
+}
+
+/// Log of email notification attempts (admin-reviewable)
+model NotificationLog {
+  id         String   @id @default(cuid())
+  ticketId   String
+  type       String   // assignment | resolution
+  recipients String   // JSON array of emails (SQLite has no array type)
+  status     String   @default("sent") // sent | failed
+  subject    String
+  body       String
+  sentAt     DateTime @default(now())
+
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("notification_log")
+}

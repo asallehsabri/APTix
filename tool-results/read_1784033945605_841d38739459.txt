@@ -1,0 +1,656 @@
+     1→===== PAGE 1 =====
+     2→JTM ICT Ticketing System — PRD
+     3→JABATAN TENAGA MANUSIA
+     4→KEMENTERIAN SUMBER MANUSIA
+     5→PRODUCT REQUIREMENTS DOCUMENT
+     6→ICT Help Desk & Ticketing System (i-Aduan ICT)
+     7→A web-based ICT incident reporting, assignment and resolution-tracking platform
+     8→Built with: z.ai (GLM-5.2) | Backend: Supabase | Hosting: Netlify
+     9→Page 1 of 18
+    10→
+    11→===== PAGE 2 =====
+    12→JTM ICT Ticketing System — PRD
+    13→Document Control
+    14→Revision History
+    15→Version Date Author Description
+    16→0.1 14 Jul 2026 ICT Unit, JTM Initial draft PRD created
+    17→Baseline PRD for development
+    18→1.0 14 Jul 2026 ICT Unit, JTM
+    19→handoff to z.ai (GLM-5.2)
+    20→Approval
+    21→Role Name Email Signature / Date
+    22→System Owner / Admin En. A. Salleh Sabri asallehsabri@jtm.gov.my
+    23→Project Sponsor Ketua Unit ICT, JTM -
+    24→Distribution List
+    25→• ICT Unit, Jabatan Tenaga Manusia
+    26→• System Administrator(s)
+    27→• Assigned Development Agent (z.ai / GLM-5.2)
+    28→• Pilot users: selected teachers and technicians
+    29→Page 2 of 18
+    30→
+    31→===== PAGE 3 =====
+    32→JTM ICT Ticketing System — PRD
+    33→Table of Contents
+    34→Page 3 of 18
+    35→
+    36→===== PAGE 4 =====
+    37→JTM ICT Ticketing System — PRD
+    38→1. Introduction
+    39→1.1 Purpose of this Document
+    40→This Product Requirements Document (PRD) defines the functional and non-functional requirements for the
+    41→development of an ICT Help Desk and Ticketing System for Jabatan Tenaga Manusia (JTM). It is intended to guide an
+    42→AI-assisted development workflow using z.ai (model GLM-5.2) as the code-generation agent, Supabase as the
+    43→backend-as-a-service platform, and Netlify as the deployment/hosting platform. This document serves as the single
+    44→source of truth for scope, features, data model, workflows, and acceptance criteria.
+    45→1.2 Background
+    46→JTM offices and training centres currently rely on ad-hoc channels (phone calls, WhatsApp, walk-ins) to report ICT-
+    47→related problems such as WiFi/network outages, software issues, computer hardware faults, PA system malfunctions,
+    48→and media equipment problems. This results in untracked requests, delayed resolution, no accountability trail, and no
+    49→visibility into ICT unit workload. A centralised, role-based, auditable ticketing system is required to formalise this
+    50→process.
+    51→1.3 Objectives
+    52→• Provide a single, authenticated channel for reporting ICT problems across defined categories.
+    53→• Enable transparent tracking of ticket status from issuance to resolution, with full timestamped history.
+    54→• Allow administrators to manage user accounts and assign tickets to the appropriate technician.
+    55→• Automate email notifications for assignment and resolution events, keeping all relevant parties informed.
+    56→• Provide a real-time, colour-coded dashboard visible to all authenticated users for at-a-glance status awareness.
+    57→• Establish a secure, low-cost, low-maintenance architecture suitable for a government department (Supabase +
+    58→Netlify).
+    59→1.4 Definitions, Acronyms and Abbreviations
+    60→Term Definition
+    61→JTM Jabatan Tenaga Manusia (Department of Manpower, Malaysia)
+    62→Ticket A single ICT problem report submitted by a user
+    63→Issuer The user (any role) who creates/reports a ticket
+    64→Assignee The technician assigned to resolve a ticket
+    65→RLS Row Level Security (Supabase/PostgreSQL access-control feature)
+    66→GLM-5.2 The z.ai large language model used as the AI coding agent for this build
+    67→SLA Service Level Agreement / target resolution timeframe
+    68→PA System Public Address system (audio announcement equipment)
+    69→2. Scope
+    70→2.1 In Scope
+    71→Page 4 of 18
+    72→
+    73→===== PAGE 5 =====
+    74→JTM ICT Ticketing System — PRD
+    75→• Email/password authentication and role-based access control (Teacher, Technician, Admin).
+    76→• Forced password change on first login and email verification for all accounts.
+    77→• Ticket creation with category, summary, date and location.
+    78→• Admin-driven user management (create, invite, assign role, deactivate).
+    79→• Admin ticket assignment to technicians.
+    80→• Technician status updates with colour-coded workflow (Issued / In Progress / Resolved).
+    81→• Full audit trail of status changes with date/time and actor.
+    82→• Transactional email notifications (assignment, resolution) via a verified email service.
+    83→• Role-visible real-time dashboard with filters and summary statistics.
+    84→• Ticket status report / history view for all users.
+    85→2.2 Out of Scope (Phase 1)
+    86→• Mobile native applications (iOS/Android) — Phase 1 is responsive web only.
+    87→• SLA breach auto-escalation and penalty tracking.
+    88→• Integration with external asset/inventory management systems.
+    89→• Multi-language UI (Phase 1 ships in Bahasa Malaysia + English labels only).
+    90→• Ticket reopening / merging workflows.
+    91→• SMS notifications.
+    92→2.3 Assumptions
+    93→• All users hold a valid JTM-issued or JTM-registered email address.
+    94→• Admin accounts are provisioned manually by the ICT Unit; there is no public self-registration.
+    95→• Supabase free/pro tier and Netlify free/pro tier are acceptable for expected traffic volume.
+    96→• An outbound transactional email provider (e.g., Resend, SendGrid, or Supabase SMTP integration) will be
+    97→connected to Supabase Edge Functions/Auth for all notification emails.
+    98→2.4 Constraints
+    99→• Government data-handling practices must be respected; passwords are never stored or transmitted in plain text
+   100→beyond initial admin provisioning.
+   101→• The default administrator account (asallehsabri@jtm.gov.my) must be seeded during initial setup and its
+   102→password rotated immediately after first login.
+   103→3. User Roles & Personas
+   104→3.1 Role Matrix
+   105→Capability Teacher Technician Admin
+   106→Log in / manage own profile Yes Yes Yes
+   107→Create a ticket Yes Yes Yes
+   108→View own submitted tickets &
+   109→Yes Yes Yes
+   110→status history
+   111→Page 5 of 18
+   112→
+   113→===== PAGE 6 =====
+   114→JTM ICT Ticketing System — PRD
+   115→Capability Teacher Technician Admin
+   116→View dashboard (all tickets,
+   117→Yes Yes Yes
+   118→colour-coded)
+   119→Update ticket status (assigned
+   120→No Yes Yes
+   121→tickets)
+   122→Assign ticket to technician No No Yes
+   123→View all tickets (all issuers) No View assigned only Yes
+   124→Add / manage user accounts &
+   125→No No Yes
+   126→roles
+   127→Receive assignment notification
+   128→N/A Yes (as assignee) No (unless assigned)
+   129→email
+   130→Receive resolution notification
+   131→Yes (as issuer) No Yes
+   132→email
+   133→3.2 Personas
+   134→Cikgu Aminah (Teacher)
+   135→A training instructor who encounters a projector fault before class. She needs a fast, simple way to report the issue
+   136→and check whether a technician has been assigned, without needing to call the ICT Unit.
+   137→En. Firdaus (Technician)
+   138→An ICT support officer who receives assigned tickets by email, updates status as he works (Issued → In Progress →
+   139→Resolved), and needs visibility into his current workload via the dashboard.
+   140→En. A. Salleh Sabri (Administrator)
+   141→The ICT Unit head who onboards new staff accounts, triages incoming tickets, assigns them to the right technician,
+   142→and monitors overall ICT service performance via the dashboard.
+   143→4. Functional Requirements
+   144→4.1 Authentication & Account Management
+   145→ID Requirement Priority
+   146→Users log in using a registered email address and password; no public self-
+   147→FR-1.1 Must
+   148→registration is permitted.
+   149→Admin can add a new user by entering name, email, and role (Teacher,
+   150→FR-1.2 Technician, or Admin). A temporary password is generated and the account is Must
+   151→created in Supabase Auth.
+   152→On successful first login, the system detects a 'must_change_password' flag and
+   153→FR-1.3 Must
+   154→forces the user to set a new password before proceeding.
+   155→FR-1.4 New accounts must be verified via a confirmation link sent to the registered email Must
+   156→Page 6 of 18
+   157→
+   158→===== PAGE 7 =====
+   159→JTM ICT Ticketing System — PRD
+   160→ID Requirement Priority
+   161→before the account becomes active.
+   162→FR-1.5 Users can request a 'forgot password' reset link sent to their registered email. Should
+   163→Admin can deactivate/reactivate a user account without deleting historical ticket
+   164→FR-1.6 Should
+   165→data.
+   166→Session tokens expire after a configurable period of inactivity and require re-
+   167→FR-1.7 Should
+   168→authentication.
+   169→4.2 Ticket Creation
+   170→ID Requirement Priority
+   171→FR-2.1 Any authenticated user (Teacher, Technician, Admin) can create a new ticket. Must
+   172→Ticket form captures: Category/Type (WiFi/Network, Software, Computer, PA
+   173→FR-2.2 System, Media), Summary of Issue (free text), Date (auto-filled, editable), and Must
+   174→Location (free text or dropdown of predefined JTM locations).
+   175→System auto-generates a unique ticket reference number and records the issuer,
+   176→FR-2.3 Must
+   177→creation timestamp, and initial status of 'Issued'.
+   178→Issuer receives on-screen confirmation and can immediately view the new ticket
+   179→FR-2.4 Must
+   180→in 'My Tickets'.
+   181→Optional: allow attachment of a photo of the fault (e.g., broken equipment) to the
+   182→FR-2.5 Could
+   183→ticket.
+   184→4.3 Ticket Assignment (Admin)
+   185→ID Requirement Priority
+   186→Admin can view all tickets across all issuers, filterable by category, status, location,
+   187→FR-3.1 Must
+   188→and date range.
+   189→Admin can assign an unassigned ticket to a specific technician from a list of active
+   190→FR-3.2 Must
+   191→Technician accounts.
+   192→Assigning a ticket records the assigning admin, the assigned technician, and a
+   193→FR-3.3 Must
+   194→timestamp; status remains 'Issued' until the technician updates it.
+   195→Admin can re-assign a ticket to a different technician if required, with the change
+   196→FR-3.4 Should
+   197→logged in the status history.
+   198→4.4 Status Updates & Workflow
+   199→ID Requirement Priority
+   200→FR-4.1 Only the assigned technician (or an admin) can update the status of a given ticket. Must
+   201→Status values are restricted to: Issued (Red), In Progress (Yellow), Resolved
+   202→FR-4.2 Must
+   203→(Green), applied in that logical order.
+   204→Each status change is appended to an immutable status-history log capturing: new
+   205→FR-4.3 Must
+   206→status, actor (name/email), date and time.
+   207→Page 7 of 18
+   208→
+   209→===== PAGE 8 =====
+   210→JTM ICT Ticketing System — PRD
+   211→ID Requirement Priority
+   212→The current status colour is reflected consistently across ticket list, ticket detail,
+   213→FR-4.4 Must
+   214→and dashboard views.
+   215→Optional remarks/notes field for the technician to add context when changing
+   216→FR-4.5 Should
+   217→status (e.g., 'Awaiting replacement part').
+   218→4.5 Notifications (Email)
+   219→ID Requirement Priority
+   220→When a ticket is assigned, the system sends an email to the assigned technician
+   221→FR-5.1 Must
+   222→notifying them of the ticket details.
+   223→The same assignment email is CC'ed to the original issuer (teacher/user),
+   224→FR-5.2 Must
+   225→informing them which technician is now handling their ticket.
+   226→When a ticket status changes to 'Resolved', the system sends an email notification
+   227→FR-5.3 Must
+   228→to the issuer and to all Admin accounts.
+   229→All notification emails are sent via a transactional email service triggered from a
+   230→FR-5.4 Must
+   231→Supabase Edge Function (or Database Webhook) — not from the client.
+   232→Failed email deliveries are logged for admin review and do not block the
+   233→FR-5.5 Should
+   234→underlying status/assignment transaction.
+   235→4.6 Reporting & Dashboard
+   236→ID Requirement Priority
+   237→All authenticated users can view a dashboard summarising ticket counts by status,
+   238→FR-6.1 Must
+   239→using the Red/Yellow/Green colour scheme.
+   240→Dashboard updates in near real-time as ticket statuses change (via Supabase
+   241→FR-6.2 Must
+   242→Realtime subscriptions).
+   243→Users can view a full status report for any ticket they issued, showing the
+   244→FR-6.3 Must
+   245→complete timestamped history.
+   246→Admins and Technicians can filter the dashboard by category, technician, location,
+   247→FR-6.4 Should
+   248→and date range.
+   249→Dashboard displays summary charts (e.g., tickets by category, average resolution
+   250→FR-6.5 Could
+   251→time) for Admins.
+   252→Users can export their own ticket history (CSV/PDF) — Admins can export all-
+   253→FR-6.6 Could
+   254→ticket reports.
+   255→5. Non-Functional Requirements
+   256→Category Requirement
+   257→All traffic served over HTTPS (enforced by Netlify). Passwords hashed via Supabase
+   258→Security Auth (bcrypt). Row Level Security enforced on every table so users can only
+   259→read/write data permitted by their role.
+   260→Page 8 of 18
+   261→
+   262→===== PAGE 9 =====
+   263→JTM ICT Ticketing System — PRD
+   264→Category Requirement
+   265→Admin credentials (e.g., asallehsabri@jtm.gov.my) must have the seeded default
+   266→Security password rotated immediately after first successful login; this is enforced by the
+   267→same forced-password-change flow as all new users.
+   268→Availability Target uptime of 99.5%, dependent on Supabase and Netlify SLAs.
+   269→Dashboard and ticket list views should load within 2 seconds under normal load
+   270→Performance
+   271→(<100 concurrent users).
+   272→Mobile-responsive layout; ticket creation form completable in under 60 seconds on a
+   273→Usability
+   274→phone browser.
+   275→Data model supports growth to multiple JTM branches/locations without schema
+   276→Scalability
+   277→change.
+   278→Every status change and assignment action is permanently logged with actor and
+   279→Auditability
+   280→timestamp; logs are not user-editable or deletable.
+   281→Codebase generated/maintained via z.ai (GLM-5.2) should follow a documented
+   282→Maintainability component structure and use environment variables for all Supabase/Netlify/email-
+   283→provider secrets — no secrets committed to source control.
+   284→Data handling aligned with Malaysian Personal Data Protection Act (PDPA) principles
+   285→Compliance
+   286→for staff personal data (name, email).
+   287→Backup Daily automated database backups via Supabase's built-in backup feature.
+   288→6. System Architecture
+   289→6.1 High-Level Architecture
+   290→The system follows a Jamstack architecture: a static/SPA frontend hosted on Netlify communicates directly with
+   291→Supabase (PostgreSQL database, Auth, Realtime, Storage, and Edge Functions) over HTTPS using the Supabase client
+   292→SDK. Business logic that must run with elevated privilege (e.g., creating auth users as Admin, sending emails) executes
+   293→in Supabase Edge Functions rather than in the browser.
+   294→• Client Layer: Web application (responsive), scaffolded and iterated using z.ai (model GLM-5.2) as the AI
+   295→development agent.
+   296→• Backend-as-a-Service: Supabase — PostgreSQL database, Supabase Auth (email/password), Row Level Security,
+   297→Realtime subscriptions, Storage (for optional attachments), and Edge Functions (serverless business logic).
+   298→• Notification Layer: Supabase Edge Function triggered by database webhook/trigger, calling a transactional email
+   299→API (e.g., Resend or SendGrid) for assignment and resolution emails.
+   300→• Hosting/Deployment: Netlify — continuous deployment from Git repository, environment variables for
+   301→Supabase URL/anon key, HTTPS by default, CDN-backed static asset delivery.
+   302→6.2 Recommended Technology Stack
+   303→Layer Technology
+   304→AI Development Agent z.ai — model GLM-5.2 (code generation, iteration, and refactoring)
+   305→Frontend Framework React (or Next.js static export) with a component library (e.g., Tailwind CSS)
+   306→Page 9 of 18
+   307→
+   308→===== PAGE 10 =====
+   309→JTM ICT Ticketing System — PRD
+   310→Layer Technology
+   311→State/Data Fetching Supabase JS client (@supabase/supabase-js), React Query for caching
+   312→Database Supabase PostgreSQL
+   313→Authentication Supabase Auth (email/password provider)
+   314→Authorisation PostgreSQL Row Level Security (RLS) policies per role
+   315→Real-time Updates Supabase Realtime (Postgres change subscriptions) for live dashboard
+   316→Serverless Functions Supabase Edge Functions (Deno) for user provisioning and email triggers
+   317→Email Delivery Transactional email API (e.g., Resend/SendGrid) invoked from an Edge Function
+   318→File Storage (optional) Supabase Storage for ticket photo attachments
+   319→Hosting / CI-CD Netlify (Git-based continuous deployment, environment variables, HTTPS)
+   320→6.3 Architecture Flow — Ticket Lifecycle
+   321→1. Teacher logs in and submits a ticket via the web app; a row is inserted into the tickets table with status =
+   322→'Issued'.
+   323→2. Admin views the unassigned ticket queue and assigns it to a Technician; the tickets row is updated with
+   324→assigned_to and an entry is added to ticket_status_history.
+   325→3. A database trigger/webhook fires an Edge Function, which sends an assignment email to the technician and CCs
+   326→the original issuer.
+   327→4. Technician updates status to 'In Progress' and later 'Resolved'; each change inserts a new ticket_status_history
+   328→row and updates tickets.current_status.
+   329→5. On the 'Resolved' transition, an Edge Function sends a resolution email to the issuer and all Admin accounts.
+   330→6. All connected clients viewing the dashboard receive the updated status in real time via a Supabase Realtime
+   331→subscription on the tickets table.
+   332→7. Data Model (Supabase / PostgreSQL)
+   333→All tables reside in the public schema and are protected by Row Level Security. auth.users (managed by Supabase
+   334→Auth) holds login credentials; a linked profiles table holds application-specific role and status data.
+   335→7.1 profiles
+   336→Extends Supabase's built-in auth.users with application-level fields. One row per user, linked 1:1 via id.
+   337→Column Type Notes
+   338→uuid (PK, FK →
+   339→id Matches the Supabase Auth user id
+   340→auth.users.id)
+   341→full_name text Display name
+   342→email text (unique) Mirrors auth.users.email for convenience in queries
+   343→text (enum:
+   344→role teacher, Determines RLS access and UI permissions
+   345→technician, admin)
+   346→Page 10 of 18
+   347→
+   348→===== PAGE 11 =====
+   349→JTM ICT Ticketing System — PRD
+   350→Column Type Notes
+   351→must_change_passwor boolean, default
+   352→Forces password change on first login
+   353→d true
+   354→boolean, default
+   355→is_active Admin can deactivate an account
+   356→true
+   357→timestamptz,
+   358→created_at Account creation time
+   359→default now()
+   360→uuid (FK →
+   361→created_by Admin who created this account
+   362→profiles.id)
+   363→7.2 categories
+   364→Lookup table for ticket types (seeded once; editable by Admin only).
+   365→Column Type Notes
+   366→id smallint (PK) Category identifier
+   367→name text 'WiFi/Network', 'Software', 'Computer', 'PA System', 'Media'
+   368→7.3 tickets
+   369→Column Type Notes
+   370→uuid (PK, default
+   371→id gen_random_uuid Ticket identifier
+   372→())
+   373→ticket_no text (unique) Human-readable reference, e.g. JTM-2026-000123
+   374→smallint (FK →
+   375→category_id Type of ICT problem
+   376→categories.id)
+   377→summary text Description of the issue
+   378→location text Room/building/branch where the issue occurs
+   379→reported_date date Date of the reported issue (may differ from created_at)
+   380→uuid (FK →
+   381→issued_by The user who created the ticket
+   382→profiles.id)
+   383→uuid (FK →
+   384→assigned_to profiles.id), Technician assigned by Admin
+   385→nullable
+   386→uuid (FK →
+   387→assigned_by profiles.id), Admin who performed the assignment
+   388→nullable
+   389→text (enum:
+   390→issued,
+   391→current_status Drives the Red/Yellow/Green indicator
+   392→in_progress,
+   393→resolved)
+   394→Page 11 of 18
+   395→
+   396→===== PAGE 12 =====
+   397→JTM ICT Ticketing System — PRD
+   398→Column Type Notes
+   399→timestamptz,
+   400→created_at Ticket creation timestamp
+   401→default now()
+   402→updated_at timestamptz Last modification timestamp (trigger-maintained)
+   403→7.4 ticket_status_history
+   404→Append-only audit log; one row is inserted for every status change or assignment event.
+   405→Column Type Notes
+   406→uuid (PK, default
+   407→id gen_random_uuid History entry id
+   408→())
+   409→uuid (FK →
+   410→ticket_id Related ticket
+   411→tickets.id)
+   412→status text Status at this point in time (or 'assigned' as an event type)
+   413→remarks text, nullable Optional technician note
+   414→uuid (FK →
+   415→actor_id User who made the change
+   416→profiles.id)
+   417→timestamptz,
+   418→changed_at Date and time of the update
+   419→default now()
+   420→7.5 notification_log
+   421→Column Type Notes
+   422→id uuid (PK) Log entry id
+   423→uuid (FK →
+   424→ticket_id Related ticket
+   425→tickets.id)
+   426→text (enum:
+   427→type assignment, Which notification event
+   428→resolution)
+   429→recipients text[] Email addresses the notification was sent to
+   430→text (enum: sent,
+   431→status Delivery outcome, for Admin troubleshooting
+   432→failed)
+   433→timestamptz,
+   434→sent_at Timestamp of send attempt
+   435→default now()
+   436→7.6 Entity Relationship Summary
+   437→• profiles (1) —— (many) tickets [via issued_by]
+   438→• profiles (1) —— (many) tickets [via assigned_to]
+   439→• tickets (1) —— (many) ticket_status_history
+   440→• tickets (1) —— (many) notification_log
+   441→Page 12 of 18
+   442→
+   443→===== PAGE 13 =====
+   444→JTM ICT Ticketing System — PRD
+   445→• categories (1) —— (many) tickets
+   446→8. Ticket Status Workflow & Colour Coding
+   447→Every ticket progresses through a linear status workflow. The current status is always rendered with its associated
+   448→colour across the ticket list, ticket detail page, and dashboard, giving all users an immediate visual read of ICT service
+   449→health.
+   450→Status Description
+   451→Default status when a ticket is created. Displayed in Red. Ticket is awaiting Admin
+   452→ISSUED
+   453→triage/assignment to a technician.
+   454→Displayed in Yellow/Amber. Set by the assigned Technician once work has begun
+   455→IN PROGRESS
+   456→on the reported issue.
+   457→Displayed in Green. Set by the assigned Technician once the issue is fixed. Triggers
+   458→RESOLVED
+   459→resolution emails to the issuer and all Admins.
+   460→8.1 State Transition Rules
+   461→• A ticket is created only in the 'Issued' state; there is no 'unassigned/draft' pre-state.
+   462→• Only an Admin can move a ticket from unassigned to assigned (assignment does not itself change
+   463→current_status, which remains 'Issued' until the technician acts).
+   464→• Only the assigned Technician or an Admin can transition status: Issued → In Progress → Resolved.
+   465→• Status cannot be set backward from Resolved without Admin override (e.g., if a fault recurs, a new ticket should
+   466→be raised in Phase 1).
+   467→• Every transition is timestamped and attributed to the acting user in ticket_status_history.
+   468→9. Email Notification Specifications
+   469→9.1 Assignment Notification
+   470→Field Value
+   471→Trigger Admin assigns a ticket to a Technician (tickets.assigned_to is set)
+   472→To Assigned Technician's registered email
+   473→CC Issuer's (Teacher/user's) registered email
+   474→[JTM ICT] Ticket JTM-2026-000123 Assigned to You — Computer Issue at Bilik
+   475→Subject (example)
+   476→Latihan 2
+   477→Ticket number, category, summary, location, reported date, issuer name, and a
+   478→Body contents
+   479→direct link to the ticket in the system
+   480→Sender Transactional email service, sent via Supabase Edge Function (not client-side)
+   481→Page 13 of 18
+   482→
+   483→===== PAGE 14 =====
+   484→JTM ICT Ticketing System — PRD
+   485→9.2 Resolution Notification
+   486→Field Value
+   487→Trigger Technician (or Admin) sets ticket current_status to 'Resolved'
+   488→To Issuer's registered email
+   489→CC All active Admin accounts
+   490→[JTM ICT] Ticket JTM-2026-000123 Resolved — WiFi/Network Issue at Makmal
+   491→Subject (example)
+   492→Komputer 1
+   493→Ticket number, category, summary, resolving technician's name, resolution
+   494→Body contents
+   495→date/time, and a link to view the full status history
+   496→Sender Transactional email service, sent via Supabase Edge Function (not client-side)
+   497→9.3 Account Provisioning Emails
+   498→• Welcome / Verify Email — sent when Admin creates a new account; contains a Supabase Auth email-
+   499→confirmation link.
+   500→• Password Reset — sent on user-initiated 'forgot password' request.
+   501→10. Dashboard & Reporting Requirements
+   502→10.1 Dashboard Views by Role
+   503→Role Dashboard Content
+   504→Summary tiles (my Issued/In Progress/Resolved counts), list of tickets I raised with colour-
+   505→Teacher
+   506→coded status, and read-only view of all-ticket status counts.
+   507→My assigned tickets grouped by status colour, workload count, and read-only view of all-
+   508→Technician
+   509→ticket status counts.
+   510→Full dashboard: all tickets by status/category/location/technician, unassigned-ticket
+   511→Admin
+   512→queue, average resolution time, and user management access.
+   513→10.2 Ticket Status Report (Detail View)
+   514→Available to all roles for tickets they are permitted to view. Displays the ticket's core details (Type, Summary, Date,
+   515→Location, Issuer), current colour-coded status, assigned technician (if any), and a chronological, timestamped history
+   516→of every status change and assignment event.
+   517→10.3 Real-Time Behaviour
+   518→The dashboard subscribes to Supabase Realtime changes on the tickets and ticket_status_history tables so that status
+   519→updates made by a technician are reflected for all viewing users within seconds, without requiring a page refresh.
+   520→Page 14 of 18
+   521→
+   522→===== PAGE 15 =====
+   523→JTM ICT Ticketing System — PRD
+   524→11. Security & Access Control
+   525→11.1 Row Level Security Policy Summary
+   526→Table Policy Summary
+   527→Users can SELECT their own row. Admins can SELECT/INSERT/UPDATE all rows. Users
+   528→profiles
+   529→cannot change their own role.
+   530→Any authenticated user can INSERT. Users can SELECT rows where issued_by =
+   531→tickets auth.uid(). Technicians can additionally SELECT/UPDATE rows where assigned_to =
+   532→auth.uid(). Admins can SELECT/UPDATE all rows.
+   533→Readable by any user who can read the parent ticket. INSERT restricted to the
+   534→ticket_status_history
+   535→assigned technician or an Admin, matching the FR-4.1 rule.
+   536→categories Readable by all authenticated users. Writable by Admins only.
+   537→notification_log Readable and writable by Admins only (service role via Edge Function for inserts).
+   538→11.2 Additional Security Controls
+   539→• Admin-only operations that require elevated privilege (creating auth users, sending role-restricted invitations)
+   540→are executed via a Supabase Edge Function using the service role key — never exposed to the browser.
+   541→• The Supabase anon key used by the frontend only ever grants access permitted by RLS policies.
+   542→• All secrets (Supabase service role key, email API key) are stored as Netlify/Supabase environment variables,
+   543→never committed to the Git repository.
+   544→• Default seeded Admin password ('password123') must be rotated at first login via the mandatory password-
+   545→change flow, and is documented here only as an initial provisioning value, not a permanent credential.
+   546→12. Deployment Plan
+   547→12.1 Environments
+   548→Environment Purpose Supabase Project Netlify Site
+   549→AI-assisted iteration with z.ai (GLM- Netlify deploy
+   550→Development supabase-jtm-ict-dev
+   551→5.2), local testing previews (per PR)
+   552→User acceptance testing with pilot jtm-ict-
+   553→Staging/UAT supabase-jtm-ict-staging
+   554→teachers/technicians staging.netlify.app
+   555→jtm-ict.netlify.app (or
+   556→Production Live system for all JTM staff supabase-jtm-ict-prod
+   557→custom domain)
+   558→12.2 Deployment Steps (Summary)
+   559→7. Provision Supabase project; run schema migrations (profiles, categories, tickets, ticket_status_history,
+   560→notification_log) and enable RLS policies.
+   561→Page 15 of 18
+   562→
+   563→===== PAGE 16 =====
+   564→JTM ICT Ticketing System — PRD
+   565→8. Seed categories table and the initial Admin account (asallehsabri@jtm.gov.my) with must_change_password =
+   566→true.
+   567→9. Configure Supabase Auth email templates and connect the transactional email provider for Edge Function-
+   568→triggered notifications.
+   569→10.Develop/generate the frontend application with z.ai (GLM-5.2), connecting to Supabase via environment-
+   570→variable-configured client.
+   571→11.Connect the Git repository to Netlify; configure build command, publish directory, and environment variables
+   572→(SUPABASE_URL, SUPABASE_ANON_KEY).
+   573→12.Deploy to Staging, conduct UAT with pilot users, then promote to Production.
+   574→13.Monitor notification_log and Supabase logs post-launch for delivery or access errors.
+   575→13. Acceptance Criteria (Sample)
+   576→AC-1: Ticket Creation
+   577→• Given a logged-in Teacher, when they submit the ticket form with Category, Summary, Date, and Location all
+   578→completed, then a new ticket is created with status 'Issued' and appears in their 'My Tickets' list.
+   579→AC-2: First-Login Password Change
+   580→• Given a user logging in for the first time with an Admin-issued temporary password, when authentication
+   581→succeeds, then the user is redirected to a mandatory 'Set New Password' screen before accessing any other
+   582→page.
+   583→AC-3: Assignment Notification
+   584→• Given an Admin assigns Ticket JTM-2026-000123 to Technician En. Firdaus, when the assignment is saved, then
+   585→an email is sent to En. Firdaus with the issuer's email in CC, within 60 seconds.
+   586→AC-4: Colour-Coded Status
+   587→• Given a ticket's current_status is 'in_progress', when any user views the dashboard or ticket list, then the ticket
+   588→is displayed with a Yellow status indicator.
+   589→AC-5: Resolution Notification
+   590→• Given a Technician changes a ticket's status to 'Resolved', when the change is saved, then an email is sent to the
+   591→issuer with all active Admins in CC, and a new ticket_status_history row is recorded with the technician's id and
+   592→timestamp.
+   593→14. Risks & Mitigations
+   594→Risk Impact Mitigation
+   595→Use a reputable transactional email provider with
+   596→Email deliverability issues (spam
+   597→Medium SPF/DKIM configured for the jtm.gov.my sending domain;
+   598→filtering of gov domain)
+   599→log all attempts in notification_log.
+   600→Enforce forced password-change flow at code level; block
+   601→Admin default password not
+   602→High access to any protected route until must_change_password
+   603→rotated
+   604→= false.
+   605→Unauthorized data access across High Enforce PostgreSQL RLS on every table; do not rely on
+   606→Page 16 of 18
+   607→
+   608→===== PAGE 17 =====
+   609→JTM ICT Ticketing System — PRD
+   610→Risk Impact Mitigation
+   611→roles frontend-only checks.
+   612→Netlify/Supabase free-tier limits Monitor usage; budget for paid tier if concurrent users or
+   613→Low
+   614→exceeded storage grow beyond free-tier caps.
+   615→Technician updates status on RLS UPDATE policy on tickets restricts writes to assigned_to
+   616→Medium
+   617→ticket not assigned to them = auth.uid() OR admin role.
+   618→15. Development Milestones (Suggested)
+   619→Phase Deliverable Target Duration
+   620→Phase 1 Supabase schema, RLS policies, Auth setup, seeded Admin account Week 1
+   621→Core frontend: login, forced password change, ticket creation, my-
+   622→Phase 2 Week 2–3
+   623→tickets view (built via z.ai GLM-5.2)
+   624→Admin user management, ticket assignment, technician status
+   625→Phase 3 Week 3–4
+   626→updates
+   627→Phase 4 Email notification Edge Functions (assignment, resolution) Week 4–5
+   628→Phase 5 Real-time colour-coded dashboard and status report views Week 5–6
+   629→Phase 6 UAT on Netlify staging, bug fixes, security review Week 6–7
+   630→Phase 7 Production deployment and user onboarding Week 8
+   631→16. Appendix
+   632→16.1 Sample RLS Policy (Pseudocode)
+   633→-- tickets: technicians may update only tickets assigned to them
+   634→CREATE POLICY technician_update_own_assigned ON tickets FOR UPDATE USING (assigned_to =
+   635→auth.uid() OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+   636→16.2 Sample Ticket JSON Shape
+   637→{ "ticket_no": "JTM-2026-000123", "category": "Computer", "summary": "Desktop PC does
+   638→not power on", "location": "Bilik Latihan 2", "reported_date": "2026-07-14",
+   639→"issued_by": "aminah@jtm.gov.my", "current_status": "issued" }
+   640→16.3 Category List
+   641→• WiFi/Network
+   642→• Software
+   643→• Computer
+   644→• PA System
+   645→• Media
+   646→Page 17 of 18
+   647→
+   648→===== PAGE 18 =====
+   649→JTM ICT Ticketing System — PRD
+   650→16.4 References
+   651→• Supabase Documentation — https://supabase.com/docs
+   652→• Netlify Documentation — https://docs.netlify.com
+   653→• z.ai Platform — model GLM-5.2
+   654→Page 18 of 18
+   655→
+   656→
