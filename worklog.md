@@ -149,3 +149,25 @@ Stage Summary:
 - ✅ Delete ticket with confirmation modal (admin only)
 - ✅ Delete user with reason modal (Bertukar Pejabat / Bersara / Lain-lain, admin only)
 - ✅ Lint clean, no console errors, server healthy
+
+---
+Task ID: supabase-setup
+Agent: Orchestrator
+Task: Set up APTix database in user's Supabase project (fdweaayvwjnbiofurrqg)
+
+Work Log:
+- Updated prisma/schema.prisma: datasource provider sqlite → postgresql
+- Tested connectivity: direct host db.fdweaayvwjnbiofurrqg.supabase.co does NOT resolve from sandbox; pooler hostnames DO resolve
+- Found correct pooler region by testing all 7 regions: ap-southeast-1 (Singapore) is the correct region (tenant recognized, only password auth failed)
+- Updated .env with pooler connection: postgresql://postgres.fdweaayvwjnbiofurrqg:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres + SUPABASE_URL + SUPABASE_ANON_KEY
+- Generated Prisma client for PostgreSQL
+- Created supabase-setup.sql (22KB) with complete schema (5 tables, indexes, FK constraints) + seed data (10 users, 5 categories, 15 tickets, 38 history entries, 15 notifications) — runnable directly in Supabase SQL Editor
+- Verified anon key works via REST API (PGRST205 = table not found, confirms auth succeeded + DB is empty)
+- BLOCKED: Cannot run prisma db push / seed without the database password (user provided [YOUR-PASSWORD] placeholder)
+
+Stage Summary:
+- ✅ Schema migrated to PostgreSQL, Prisma client generated
+- ✅ Pooler connection configured (correct region: ap-southeast-1)
+- ✅ SQL setup file ready at /home/z/my-project/supabase-setup.sql + download/supabase-setup.sql
+- ⏳ Awaiting database password from user to complete prisma db push + seed
+- App still running on old SQLite (cached client) — will switch to Supabase once password is provided
