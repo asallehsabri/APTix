@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Netlify's @netlify/plugin-nextjs handles the build output.
-  // No explicit "output" mode needed.
+  // Vercel auto-detects Next.js and handles build output natively.
   typescript: {
     ignoreBuildErrors: true,
   },
