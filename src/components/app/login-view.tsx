@@ -57,8 +57,8 @@ export function LoginView() {
       <div className="relative z-10 w-full max-w-md">
         {/* Brand header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl glass-strong glow mb-4">
-            <Ticket className="h-8 w-8 text-primary" />
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl glass-strong glow mb-4 overflow-hidden p-1">
+            <img src="/logo-adtec.png" alt="ADTEC JTM Kampus Pedas" className="h-full w-full object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-gradient">APTix</h1>
           <p className="text-sm text-muted-foreground mt-1">ADTEC Pedas ICT Ticketing System</p>

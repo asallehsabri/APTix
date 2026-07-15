@@ -21,6 +21,7 @@ export const metadata: Metadata = {
   keywords: ["APTix", "ADTEC Pedas", "JTM", "ICT Ticketing", "i-Aduan ICT", "Help Desk"],
   authors: [{ name: "ADTEC Pedas ICT Unit" }],
   robots: { index: false, follow: false },
+  icons: { icon: "/logo-adtec.png", apple: "/logo-adtec.png" },
 };
 
 export default function RootLayout({

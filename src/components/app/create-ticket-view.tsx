@@ -27,7 +27,6 @@ const LOCATIONS = [
   'Pejabat Pengarah',
   'Pusat Sumber',
   'Surau',
-  'Zon Eksekutif',
 ]
 
 export function CreateTicketView() {

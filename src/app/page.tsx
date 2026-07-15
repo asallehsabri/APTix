@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/auth-store'
 import { LoginView } from '@/components/app/login-view'
 import { ChangePasswordView } from '@/components/app/change-password-view'
 import { AppShell } from '@/components/app/app-shell'
-import { Ticket } from 'lucide-react'
 
 export default function HomePage() {
   const { user, initialized, init } = useAuthStore()
@@ -19,8 +18,8 @@ export default function HomePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl glass-strong mb-4 animate-pulse">
-            <Ticket className="h-8 w-8 text-primary" />
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl glass-strong mb-4 animate-pulse overflow-hidden p-1">
+            <img src="/logo-adtec.png" alt="ADTEC JTM Kampus Pedas" className="h-full w-full object-contain" />
           </div>
           <div className="text-gradient text-2xl font-bold">APTix</div>
           <div className="text-xs text-muted-foreground mt-1">Loading ADTEC Pedas ICT Ticketing…</div>

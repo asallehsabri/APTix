@@ -201,7 +201,7 @@ export function DashboardView() {
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" /> Recent Tickets
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => setView(user.role === 'issuer' ? 'my-tickets' : 'tickets')}>
+          <Button variant="ghost" size="sm" onClick={() => setView(user.role === 'admin' ? 'tickets' : 'my-tickets')}>
             View all <ArrowRight className="h-3.5 w-3.5 ml-1" />
           </Button>
         </CardHeader>

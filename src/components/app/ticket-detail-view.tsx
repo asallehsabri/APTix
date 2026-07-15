@@ -112,7 +112,7 @@ export function TicketDetailView() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <Button variant="ghost" size="sm" onClick={() => setView(user.role === 'issuer' ? 'my-tickets' : 'tickets')}>
+      <Button variant="ghost" size="sm" onClick={() => setView(user.role === 'admin' ? 'tickets' : 'my-tickets')}>
         <ArrowLeft className="h-4 w-4 mr-1" /> Back to list
       </Button>
 

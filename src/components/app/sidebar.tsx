@@ -21,7 +21,7 @@ const NAV: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'create-ticket', label: 'Report Issue', icon: PlusCircle },
   { id: 'my-tickets', label: 'My Tickets', icon: ListChecks },
-  { id: 'tickets', label: 'All Tickets', icon: TicketIcon, roles: ['technician', 'admin'] },
+  { id: 'tickets', label: 'All Tickets', icon: TicketIcon, roles: ['admin'] },
   { id: 'unassigned', label: 'Unassigned Queue', icon: AlertOctagon, roles: ['admin'] },
   { id: 'users', label: 'User Management', icon: Users, roles: ['admin'] },
   { id: 'notifications', label: 'Notification Log', icon: Bell, roles: ['admin'] },
@@ -62,8 +62,9 @@ export function Sidebar() {
         {/* Brand */}
         <div className="flex items-center justify-between px-5 py-5 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl glass-strong flex items-center justify-center">
-              <TicketIcon className="h-5 w-5 text-primary" />
+            <div className="h-10 w-10 rounded-xl glass-strong flex items-center justify-center overflow-hidden flex-shrink-0">
+              {/* ADTEC JTM Kampus Pedas official logo */}
+              <img src="/logo-adtec.png" alt="ADTEC JTM Kampus Pedas" className="h-full w-full object-contain p-0.5" />
             </div>
             <div>
               <div className="font-bold text-gradient text-lg leading-none">APTix</div>

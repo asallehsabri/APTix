@@ -56,7 +56,7 @@ async function main() {
   // --- Tickets (PRD §4.2, §7.3, §8) ---
   const catMap = Object.fromEntries(categories.map((c) => [c.name, c.id]))
   const locations = [
-    'Pejabat Pengarah', 'Zon Eksekutif', 'Auditorium', 'Dewan Serbaguna',
+    'Pejabat Pengarah', 'Auditorium', 'Dewan Serbaguna',
     'Pusat Sumber', 'Asrama', 'Surau', 'Bahagian Mekatronik',
     'Bahagian Telekomunikasi', 'Bahagian CADD Seni Bina', 'Bahagian CADD Mekanikal',
     'Bahagian Kimpalan', 'Bahagian Fabrikasi', 'Bahagian Pembuatan (Pemesinan)',

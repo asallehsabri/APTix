@@ -108,3 +108,24 @@ Stage Summary:
 - ✅ Bulk user upload works (CSV template + preview + results with credentials)
 - ✅ Dashboard shows 5 stat tiles (Total, Issued, In Progress, Resolved, Confirmed)
 - ✅ Lint clean, no dev log errors, server healthy
+
+---
+Task ID: adjust-2
+Agent: Orchestrator
+Task: Logo change + remove Zon Eksekutif + restrict All Tickets to admin + role-aware My Tickets + admin filters
+
+Work Log:
+- Logo: Copied "Logo ADTEC JTM 2025 Kampus Pedas.png" to public/logo-adtec.png. Updated sidebar brand (h-10 w-10 container retained), login screen brand (h-16 w-16 container retained), page.tsx loader, and metadata icons/favicon — all now use the ADTEC logo image with object-contain. Position/size unchanged.
+- Locations: Removed 'Zon Eksekutif' from create-ticket-view LOCATIONS + seed.ts. 13 locations remain in alphabetical order. No DB tickets used 'Zon Eksekutif' so no migration needed.
+- Sidebar access: Changed 'All Tickets' nav item roles from ['technician','admin'] → ['admin'] only. Technician and Issuer no longer see All Tickets.
+- My Tickets role-aware scope: Updated tickets-view mode='mine' to pass scope='assigned' for technicians (tickets assigned to them) and scope='mine' for issuer/admin (tickets issued by them). Updated title to "My Assigned Tickets" (technician) / "My Issued Tickets" (issuer/admin). Updated API to handle scope='assigned' → where={assignedToId: user.id}. Updated dashboard-view + ticket-detail-view "View all"/"Back" buttons to route admin→tickets, others→my-tickets.
+- Admin filters in All Tickets: Added issuedById filter param to GET /api/tickets API. Added Issuer + Technician filter dropdowns in tickets-view (only shown when mode='all' and user.role==='admin'). Admin can now filter by: Issuer, Technician, Status, Category, Location (all 5). Fetches /api/users once to populate issuer/technician dropdowns.
+- Browser-verified: admin sees All Tickets + 5 filters (Issuer dropdown lists 5 issuers, Technician dropdown lists 3 technicians); technician sidebar has no All Tickets, My Tickets shows "My Assigned Tickets" with Firdaus's assigned tickets; issuer sidebar has no All Tickets, My Tickets shows "My Issued Tickets" with Aminah's issued tickets; admin My Tickets shows "My Issued Tickets" with Norliza's issued tickets; location dropdown has 13 options (no Zon Eksekutif); ADTEC logo loads on login + sidebar.
+
+Stage Summary:
+- ✅ ADTEC JTM Kampus Pedas logo in sidebar, login, loader, favicon (position retained)
+- ✅ Zon Eksekutif removed from locations (13 alphabetical)
+- ✅ All Tickets restricted to admin only (sidebar + routing)
+- ✅ My Tickets role-aware: issuer/admin=issued-by-them, technician=assigned-to-them
+- ✅ Admin All Tickets filters: Issuer, Technician, Status, Category, Location
+- ✅ Lint clean, no console/dev-log errors

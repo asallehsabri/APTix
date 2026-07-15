@@ -17,9 +17,10 @@ export async function GET(req: NextRequest) {
   const categoryId = url.searchParams.get('categoryId')
   const location = url.searchParams.get('location')
   const assignedToId = url.searchParams.get('assignedToId')
+  const issuedById = url.searchParams.get('issuedById')
   const unassigned = url.searchParams.get('unassigned') === 'true'
   const q = url.searchParams.get('q')
-  const scope = url.searchParams.get('scope') // 'mine' for "my tickets"
+  const scope = url.searchParams.get('scope') // 'mine' | 'assigned' for "my tickets"
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '100', 10) || 100, 500)
 
   // Build RLS-equivalent where clause
@@ -36,6 +37,8 @@ export async function GET(req: NextRequest) {
 
   if (scope === 'mine') {
     visibility = { issuedById: user.id }
+  } else if (scope === 'assigned') {
+    visibility = { assignedToId: user.id }
   }
 
   const where: Record<string, unknown> = { ...visibility }
@@ -43,6 +46,7 @@ export async function GET(req: NextRequest) {
   if (categoryId) where.categoryId = parseInt(categoryId, 10)
   if (location) where.location = { contains: location }
   if (assignedToId) where.assignedToId = assignedToId
+  if (issuedById) where.issuedById = issuedById
   if (unassigned) where.assignedToId = null
   if (q) {
     where.OR = [
