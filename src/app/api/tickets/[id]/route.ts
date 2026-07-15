@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { requirePasswordChanged, canAccessTicket, ok, fail } from '@/lib/security'
+import { requirePasswordChanged, requireRole, canAccessTicket, ok, fail } from '@/lib/security'
+import { emitTicketChange } from '@/lib/ticket-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -41,6 +42,28 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 
   return ok({ ticket: ticketWithParsedNotifications })
+}
+
+// DELETE /api/tickets/[id] — admin deletes a ticket and all its history + notifications.
+// Cascading deletes are configured in the Prisma schema (ticket_status_history
+// and notification_log both use onDelete: Cascade), so deleting the ticket row
+// automatically removes its child records.
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  const admin = await requireRole('admin')
+  if (admin instanceof Response) return admin
+  const { id } = await params
+
+  const ticket = await db.ticket.findUnique({
+    where: { id },
+    select: { id: true, ticketNo: true, summary: true },
+  })
+  if (!ticket) return fail('Ticket not found', 404)
+
+  await db.ticket.delete({ where: { id } })
+
+  await emitTicketChange('ticket_updated', ticket.id)
+
+  return ok({ success: true, message: `Ticket ${ticket.ticketNo} deleted.`, ticketNo: ticket.ticketNo })
 }
 
 function safeParseRecipients(raw: string): string[] {

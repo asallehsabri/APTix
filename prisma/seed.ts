@@ -60,6 +60,7 @@ async function main() {
     'Pusat Sumber', 'Asrama', 'Surau', 'Bahagian Mekatronik',
     'Bahagian Telekomunikasi', 'Bahagian CADD Seni Bina', 'Bahagian CADD Mekanikal',
     'Bahagian Kimpalan', 'Bahagian Fabrikasi', 'Bahagian Pembuatan (Pemesinan)',
+    'Bahagian Khidmat Pengurusan',
   ]
   const summaries = [
     'Projector does not display image from laptop',

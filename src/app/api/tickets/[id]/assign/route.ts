@@ -25,6 +25,16 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
   if (!ticket) return fail('Ticket not found', 404)
 
+  // Re-assignment restriction: a ticket can only be assigned/re-assigned while
+  // it is still in the 'Issued' state. Once a technician moves it to In Progress
+  // (or beyond), the assignment is locked.
+  if (ticket.currentStatus !== 'issued') {
+    return fail(
+      `This ticket cannot be re-assigned because it is already "${ticket.currentStatus.replace('_', ' ')}". Re-assignment is only allowed while the ticket is still "Issued".`,
+      400
+    )
+  }
+
   const technician = await db.profile.findUnique({
     where: { id: parsed.data.assignedToId },
     select: { id: true, fullName: true, email: true, role: true, isActive: true },

@@ -114,6 +114,10 @@ export const api = {
     }),
   updateUser: (id: string, data: { fullName?: string; role?: Role; isActive?: boolean }) =>
     request<{ user: User }>(`/api/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteUser: (id: string, reason: 'Bertukar Pejabat' | 'Bersara' | 'Lain-lain', note?: string) =>
+    request<{ success: boolean; message: string; reason: string; deletedUser: { id: string; fullName: string; email: string; role: string } }>(`/api/users/${id}`, {
+      method: 'DELETE', body: JSON.stringify({ reason, note }),
+    }),
   bulkCreateUsers: (users: { email: string; fullName: string; role: Role }[]) =>
     request<{
       results: {
@@ -144,6 +148,8 @@ export const api = {
     request<{ ticket: Ticket; message: string }>(`/api/tickets/${id}/status`, {
       method: 'POST', body: JSON.stringify({ status, remarks }),
     }),
+  deleteTicket: (id: string) =>
+    request<{ success: boolean; message: string; ticketNo: string }>(`/api/tickets/${id}`, { method: 'DELETE' }),
 
   // Dashboard
   dashboard: (scope?: 'mine' | 'assigned') =>

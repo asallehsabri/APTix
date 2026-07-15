@@ -68,7 +68,7 @@ export function Sidebar() {
             </div>
             <div>
               <div className="font-bold text-gradient text-lg leading-none">APTix</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">ADTEC Pedas ICT</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">BPSM ADTEC Pedas</div>
             </div>
           </div>
           <Button

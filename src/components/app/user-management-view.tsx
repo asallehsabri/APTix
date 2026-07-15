@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -16,7 +17,7 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import {
   Users, UserPlus, ShieldCheck, ShieldAlert, Power, Copy, Check, Loader2,
-  Mail, Search, KeyRound, Upload, FileSpreadsheet, Download, AlertTriangle,
+  Mail, Search, KeyRound, Upload, FileSpreadsheet, Download, AlertTriangle, Trash2,
 } from 'lucide-react'
 
 const ROLE_COLORS: Record<Role, string> = {
@@ -38,6 +39,12 @@ export function UserManagementView() {
   const [tempPwd, setTempPwd] = useState<{ user: User; pwd: string } | null>(null)
   const [copied, setCopied] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+
+  // Delete-user state
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
+  const [deleteReason, setDeleteReason] = useState<'Bertukar Pejabat' | 'Bersara' | 'Lain-lain' | ''>('')
+  const [deleteNote, setDeleteNote] = useState('')
+  const [deletingUser, setDeletingUser] = useState(false)
 
   // Bulk upload state
   const [bulkOpen, setBulkOpen] = useState(false)
@@ -108,6 +115,23 @@ export function UserManagementView() {
       toast.error('Update failed', { description: e instanceof Error ? e.message : '' })
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!deleteTarget || !deleteReason) return
+    setDeletingUser(true)
+    try {
+      const { message } = await api.deleteUser(deleteTarget.id, deleteReason, deleteNote || undefined)
+      toast.success('User deleted', { description: message })
+      setDeleteTarget(null)
+      setDeleteReason('')
+      setDeleteNote('')
+      load()
+    } catch (e) {
+      toast.error('Delete failed', { description: e instanceof Error ? e.message : '' })
+    } finally {
+      setDeletingUser(false)
     }
   }
 
@@ -290,6 +314,12 @@ export function UserManagementView() {
                         className="h-7 px-2" title={u.isActive ? 'Deactivate' : 'Reactivate'}>
                         {updatingId === u.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
                           u.isActive ? <Power className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
+                      </Button>
+                      <Button size="sm" variant="outline"
+                        onClick={() => { setDeleteTarget(u); setDeleteReason(''); setDeleteNote('') }}
+                        disabled={updatingId === u.id}
+                        className="h-7 px-2 text-destructive border-destructive/40 hover:bg-destructive/10" title="Delete user">
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </>
                   )}
@@ -531,6 +561,53 @@ export function UserManagementView() {
             ) : (
               <Button onClick={() => { setBulkOpen(false); setBulkResults(null); setBulkRows([]); setBulkFileName('') }}>Done</Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== Delete User with reason dialog ===== */}
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) { setDeleteTarget(null); setDeleteReason(''); setDeleteNote('') } }}>
+        <DialogContent className="glass-strong max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive"><Trash2 className="h-4 w-4" /> Delete User Account</DialogTitle>
+            <DialogDescription>
+              You are about to permanently delete <strong>{deleteTarget?.fullName}</strong> ({deleteTarget?.email}).
+              Please select a reason for this deletion. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Reason for deletion *</Label>
+              <Select value={deleteReason} onValueChange={(v) => setDeleteReason(v as 'Bertukar Pejabat' | 'Bersara' | 'Lain-lain')}>
+                <SelectTrigger className="bg-background/40"><SelectValue placeholder="Select a reason" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Bertukar Pejabat">Bertukar Pejabat</SelectItem>
+                  <SelectItem value="Bersara">Bersara</SelectItem>
+                  <SelectItem value="Lain-lain">Lain-lain</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {deleteReason === 'Lain-lain' && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Please specify (optional)</Label>
+                <Input value={deleteNote} onChange={(e) => setDeleteNote(e.target.value)}
+                  placeholder="e.g. Tamat kontrak"
+                  className="bg-background/40" maxLength={200} disabled={deletingUser} />
+              </div>
+            )}
+            <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/30 p-2.5 text-xs text-destructive">
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>
+                Tickets issued by this user will be transferred to your account. Tickets assigned to them will become unassigned. Historical ticket data is preserved.
+              </span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setDeleteTarget(null); setDeleteReason(''); setDeleteNote('') }} disabled={deletingUser}>Cancel</Button>
+            <Button onClick={handleDeleteUser} disabled={deletingUser || !deleteReason} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deletingUser ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
+              {deletingUser ? 'Deleting…' : 'Delete User'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

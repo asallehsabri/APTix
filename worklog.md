@@ -129,3 +129,23 @@ Stage Summary:
 - ✅ My Tickets role-aware: issuer/admin=issued-by-them, technician=assigned-to-them
 - ✅ Admin All Tickets filters: Issuer, Technician, Status, Category, Location
 - ✅ Lint clean, no console/dev-log errors
+
+---
+Task ID: adjust-3
+Agent: Orchestrator
+Task: Locations + Other input, sidebar subtitle, re-assign restriction, delete ticket, delete user with reason
+
+Work Log:
+- Locations: Added 'Bahagian Khidmat Pengurusan' and 'Other' to LOCATIONS (now 15 total, alphabetical). When 'Other' is selected, a manual text input appears (autoFocus, maxLength 200, min 2 chars). The submitted location uses the custom value. Updated seed.ts locations too.
+- Sidebar subtitle: Changed 'ADTEC Pedas ICT' → 'BPSM ADTEC Pedas' in sidebar brand area.
+- Re-assign restriction: Updated assign API route to return 400 if ticket.currentStatus !== 'issued'. Updated ticket-detail-view canAssign = isAdmin && ticket.currentStatus === 'issued'. Verified: in-progress ticket shows NO assign button; issued ticket shows Re-assign button.
+- Delete ticket: Added DELETE handler to /api/tickets/[id] route (admin only, cascading deletes remove history+notifications). Added deleteTicket to api-client. Added Trash2 button + AlertDialog confirmation modal in ticket-detail-view ("Delete this ticket?" / "Yes, delete ticket"). Verified API: ticket deleted, subsequent GET returns 404.
+- Delete user with reason: Added DELETE handler to /api/users/[id] (admin only, requires reason: Bertukar Pejabat/Bersara/Lain-lain). Reassigns tickets+history to admin before deleting (preserves audit trail). Guards: last-admin + self-deletion blocked. Added deleteUser to api-client. Added Trash2 button per user card + Dialog with reason dropdown in user-management-view. Selecting 'Lain-lain' reveals a note input. Verified API: delete without reason=400, valid reason=success, self-delete=400.
+
+Stage Summary:
+- ✅ 15 locations including Bahagian Khidmat Pengurusan + Other (with manual input)
+- ✅ Sidebar shows "BPSM ADTEC Pedas"
+- ✅ Re-assign only allowed while status='Issued' (API + UI enforced)
+- ✅ Delete ticket with confirmation modal (admin only)
+- ✅ Delete user with reason modal (Bertukar Pejabat / Bersara / Lain-lain, admin only)
+- ✅ Lint clean, no console errors, server healthy

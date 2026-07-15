@@ -19,6 +19,7 @@ const LOCATIONS = [
   'Bahagian CADD Mekanikal',
   'Bahagian CADD Seni Bina',
   'Bahagian Fabrikasi',
+  'Bahagian Khidmat Pengurusan',
   'Bahagian Kimpalan',
   'Bahagian Mekatronik',
   'Bahagian Pembuatan (Pemesinan)',
@@ -27,6 +28,7 @@ const LOCATIONS = [
   'Pejabat Pengarah',
   'Pusat Sumber',
   'Surau',
+  'Other',
 ]
 
 export function CreateTicketView() {
@@ -36,13 +38,17 @@ export function CreateTicketView() {
   const [categoryId, setCategoryId] = useState<string>('')
   const [summary, setSummary] = useState('')
   const [location, setLocation] = useState<string>('')
+  const [customLocation, setCustomLocation] = useState<string>('')
   const [reportedDate, setReportedDate] = useState(new Date().toISOString().slice(0, 10))
 
   useEffect(() => {
     api.listCategories().then((r) => setCategories(r.categories)).catch(() => {})
   }, [])
 
-  const valid = categoryId && summary.length >= 5 && location && reportedDate
+  // When 'Other' is selected, the actual location is the manually-typed value
+  const isOther = location === 'Other'
+  const effectiveLocation = isOther ? customLocation.trim() : location
+  const valid = categoryId && summary.length >= 5 && effectiveLocation.length >= 2 && reportedDate
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,7 +58,7 @@ export function CreateTicketView() {
       const { ticket } = await api.createTicket({
         categoryId: parseInt(categoryId, 10),
         summary: summary.trim(),
-        location,
+        location: effectiveLocation,
         reportedDate,
       })
       toast.success('Ticket created', { description: `${ticket.ticketNo} — ${ticket.category.name}` })
@@ -113,6 +119,18 @@ export function CreateTicketView() {
                     {LOCATIONS.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                {isOther && (
+                  <Input
+                    placeholder="Type the specific location…"
+                    value={customLocation}
+                    onChange={(e) => setCustomLocation(e.target.value)}
+                    className="bg-background/40"
+                    required
+                    maxLength={200}
+                    disabled={loading}
+                    autoFocus
+                  />
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="date" className="text-xs font-medium flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" /> Reported Date *</Label>

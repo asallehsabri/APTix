@@ -11,13 +11,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { StatusBadge } from './status-badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 import { formatDistanceToNow, format } from 'date-fns'
 import {
   ArrowLeft, MapPin, Calendar, User as UserIcon, Wrench, Clock, Tag,
-  History, UserPlus, Play, CheckCircle2, Mail, Loader2, Building2, ShieldCheck,
+  History, UserPlus, Play, CheckCircle2, Mail, Loader2, Building2, ShieldCheck, Trash2, AlertTriangle,
 } from 'lucide-react'
 
 export function TicketDetailView() {
@@ -31,6 +32,8 @@ export function TicketDetailView() {
   const [assigning, setAssigning] = useState(false)
   const [statusRemarks, setStatusRemarks] = useState('')
   const [updating, setUpdating] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     if (!selectedTicketId) return
@@ -92,6 +95,21 @@ export function TicketDetailView() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!ticket) return
+    setDeleting(true)
+    try {
+      const { message } = await api.deleteTicket(ticket.id)
+      toast.success('Ticket deleted', { description: message })
+      setDeleteOpen(false)
+      setView('tickets')
+    } catch (e) {
+      toast.error('Delete failed', { description: e instanceof Error ? e.message : '' })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading || !ticket) {
     return (
       <div className="max-w-3xl mx-auto space-y-3">
@@ -106,9 +124,12 @@ export function TicketDetailView() {
   const isAssignedTech = ticket.assignedToId === user.id
   const isIssuer = ticket.issuedById === user.id
   const canUpdateStatus = (isAssignedTech || isAdmin) && !!ticket.assignedToId
-  const canAssign = isAdmin
+  // Assign/Re-assign is only allowed while the ticket is still 'Issued'
+  const canAssign = isAdmin && ticket.currentStatus === 'issued'
   // Issuer confirms resolution: only when status is 'resolved' and user is the issuer or admin
   const canConfirmResolution = ticket.currentStatus === 'resolved' && (isIssuer || isAdmin)
+  // Admin can delete any ticket
+  const canDelete = isAdmin
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
@@ -127,12 +148,19 @@ export function TicketDetailView() {
               </div>
               <h2 className="text-lg font-semibold mt-1.5">{ticket.summary}</h2>
             </div>
-            {canAssign && (
-              <Button onClick={openAssignDialog} size="sm">
-                <UserPlus className="h-4 w-4 mr-1.5" />
-                {ticket.assignedTo ? 'Re-assign' : 'Assign'}
-              </Button>
-            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              {canAssign && (
+                <Button onClick={openAssignDialog} size="sm">
+                  <UserPlus className="h-4 w-4 mr-1.5" />
+                  {ticket.assignedTo ? 'Re-assign' : 'Assign'}
+                </Button>
+              )}
+              {canDelete && (
+                <Button onClick={() => setDeleteOpen(true)} size="sm" variant="outline" className="text-destructive border-destructive/40 hover:bg-destructive/10">
+                  <Trash2 className="h-4 w-4 mr-1.5" /> Delete
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
@@ -312,6 +340,32 @@ export function TicketDetailView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent className="glass-strong">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" /> Delete this ticket?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to permanently delete ticket <strong className="font-mono">{ticket.ticketNo}</strong> — "{ticket.summary}".
+              This will also remove its entire status history and notification log. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDelete() }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
+              {deleting ? 'Deleting…' : 'Yes, delete ticket'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
