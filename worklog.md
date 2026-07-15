@@ -171,3 +171,29 @@ Stage Summary:
 - ✅ SQL setup file ready at /home/z/my-project/supabase-setup.sql + download/supabase-setup.sql
 - ⏳ Awaiting database password from user to complete prisma db push + seed
 - App still running on old SQLite (cached client) — will switch to Supabase once password is provided
+
+---
+Task ID: supabase-complete
+Agent: Orchestrator
+Task: Complete Supabase database setup with actual password
+
+Work Log:
+- Received database password from user: APTixPedas@123
+- URL-encoded the @ in password: APTixPedas%40123 (required for connection string)
+- Updated .env with pooler connection (ap-southeast-1 region, no quotes around value)
+- Found and fixed stale shell DATABASE_URL env var (from old SQLite config) that was overriding .env — used `unset DATABASE_URL` before starting server
+- Ran prisma db push → all 5 tables created in Supabase PostgreSQL
+- Ran prisma seed → 5 categories, 10 users, 15 tickets, 38 history entries, 15 notifications populated
+- Restarted dev server via .zscripts/dev.sh with clean env (unset stale DATABASE_URL first)
+- Verified via API: login works, dashboard shows 15 tickets (5 issued/5 in_progress/5 resolved/0 confirmed), 10 users, 3 technicians
+- Verified via browser: login → dashboard with all 5 status tiles rendering correctly, no console errors
+- Verified via Supabase REST API: tables exist and contain data (profiles query returned real user ID)
+- Lint clean, server healthy
+
+Stage Summary:
+- ✅ Database fully set up in Supabase (project fdweaayvwjnbiofurrqg, region ap-southeast-1)
+- ✅ Connection via pooler: aws-0-ap-southeast-1.pooler.supabase.com:5432 (session mode)
+- ✅ All 5 tables created with proper indexes + foreign key constraints
+- ✅ Dummy data seeded (10 users, 5 categories, 15 tickets with full history + notifications)
+- ✅ App running against Supabase (verified via API + browser + REST API)
+- ✅ Lint clean, no errors
