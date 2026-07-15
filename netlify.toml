@@ -1,0 +1,38 @@
+# APTix — Netlify Deployment Configuration
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  command = "bun run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Netlify uses DATABASE_URL at build time for Prisma generate.
+  # The actual runtime DATABASE_URL must be set in Netlify dashboard
+  # (Site settings → Environment variables) — never commit it here.
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Next.js 16 plugin (auto-detected, but explicit here for clarity)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Security headers applied to all responses
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    X-XSS-Protection = "1; mode=block"
+
+# Cache static assets aggressively
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/logo-adtec.png"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

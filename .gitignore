@@ -30,12 +30,21 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — NEVER commit real .env (contains DB password + JWT secret).
+# .env.example IS allowed (template only, no real secrets).
+.env
+.env.local
+.env.*.local
+.env.production
+!.env.example
+
+# SQLite local database (not used in production — Supabase is the backend)
+/db/
+*.db
+*.db-journal
 
 # vercel
 .vercel
-
 
 # typescript
 *.tsbuildinfo
@@ -43,12 +52,26 @@ next-env.d.ts
 local-*
 .claude
 .z-ai-config
+
+# logs
 *.log
 dev.log
 dev.out.log
-test
-prompt
-
 server.log
-# Skills directory
+realtime.log
+dev-startup.log
+
+# Skills directory (internal tooling)
 /skills/
+
+# zscripts logs
+/.zscripts/*.log
+
+# Sandbox / dev environment artifacts (not part of the deployed app)
+/download/
+/.zscripts/
+/worklog.md
+/Caddyfile
+/dev-startup.log
+/tool-results/
+/upload/
