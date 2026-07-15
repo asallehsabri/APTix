@@ -16,13 +16,14 @@ import {
 } from 'recharts'
 import {
   AlertOctagon, Clock, CheckCircle2, Inbox, TrendingUp, Users, Activity,
-  PlusCircle, ArrowRight, Timer, MapPin, Wrench,
+  PlusCircle, ArrowRight, Timer, MapPin, Wrench, ShieldCheck,
 } from 'lucide-react'
 
 const STATUS_COLORS_HEX = {
   issued: '#ef4444',
   in_progress: '#eab308',
   resolved: '#22c55e',
+  confirmed: '#0891b2',
 }
 
 export function DashboardView() {
@@ -59,6 +60,7 @@ export function DashboardView() {
     { name: 'Issued', value: data.statusCounts.issued, color: STATUS_COLORS_HEX.issued },
     { name: 'In Progress', value: data.statusCounts.in_progress, color: STATUS_COLORS_HEX.in_progress },
     { name: 'Resolved', value: data.statusCounts.resolved, color: STATUS_COLORS_HEX.resolved },
+    { name: 'Confirmed', value: data.statusCounts.confirmed, color: STATUS_COLORS_HEX.confirmed },
   ].filter((d) => d.value > 0)
 
   return (
@@ -83,8 +85,8 @@ export function DashboardView() {
         </div>
       )}
 
-      {/* Stat tiles (PRD §10.1 — colour-coded Red/Yellow/Green) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Stat tiles (PRD §10.1 — colour-coded Red/Yellow/Green/Teal) */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <StatTile
           label="Total Tickets" value={data.total} icon={Inbox}
           color="text-foreground" bg="glass"
@@ -99,7 +101,11 @@ export function DashboardView() {
         />
         <StatTile
           label="Resolved" value={data.statusCounts.resolved} icon={CheckCircle2}
-          color="text-emerald-500" bg="status-resolved" subtitle="Completed"
+          color="text-emerald-500" bg="status-resolved" subtitle="Awaiting confirmation"
+        />
+        <StatTile
+          label="Confirmed" value={data.statusCounts.confirmed} icon={ShieldCheck}
+          color="text-cyan-600 dark:text-cyan-400" bg="status-confirmed" subtitle="Closed"
         />
       </div>
 

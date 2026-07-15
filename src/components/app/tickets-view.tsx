@@ -91,6 +91,7 @@ export function TicketsView({ mode = 'all' }: Props) {
                 <SelectItem value="issued">Issued</SelectItem>
                 <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
               </SelectContent>
             </Select>
             <Select value={category} onValueChange={setCategory}>

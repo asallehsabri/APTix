@@ -3,7 +3,7 @@
 // server-provided error message.
 
 export type Role = 'issuer' | 'technician' | 'admin'
-export type TicketStatus = 'issued' | 'in_progress' | 'resolved'
+export type TicketStatus = 'issued' | 'in_progress' | 'resolved' | 'confirmed'
 
 export interface User {
   id: string
@@ -52,7 +52,7 @@ export interface HistoryEntry {
 export interface NotificationEntry {
   id: string
   ticketId: string
-  type: 'assignment' | 'resolution'
+  type: 'assignment' | 'resolution' | 'confirmation'
   recipients: string[]
   status: string
   subject: string
@@ -63,7 +63,7 @@ export interface NotificationEntry {
 
 export interface DashboardData {
   scope: string
-  statusCounts: { issued: number; in_progress: number; resolved: number }
+  statusCounts: { issued: number; in_progress: number; resolved: number; confirmed: number }
   byCategory: { category: string; count: number }[]
   byLocation: { location: string; count: number }[]
   recent: Ticket[]
@@ -114,6 +114,14 @@ export const api = {
     }),
   updateUser: (id: string, data: { fullName?: string; role?: Role; isActive?: boolean }) =>
     request<{ user: User }>(`/api/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  bulkCreateUsers: (users: { email: string; fullName: string; role: Role }[]) =>
+    request<{
+      results: {
+        success: { user: User; temporaryPassword: string }[]
+        failures: { row: number; email: string; error: string }[]
+      }
+      summary: { total: number; success: number; failures: number }
+    }>('/api/users/bulk', { method: 'POST', body: JSON.stringify({ users }) }),
 
   // Categories
   listCategories: () => request<{ categories: Category[] }>('/api/categories'),
@@ -132,7 +140,7 @@ export const api = {
     request<{ ticket: Ticket; message: string }>(`/api/tickets/${id}/assign`, {
       method: 'POST', body: JSON.stringify({ assignedToId }),
     }),
-  updateStatus: (id: string, status: 'in_progress' | 'resolved', remarks?: string) =>
+  updateStatus: (id: string, status: 'in_progress' | 'resolved' | 'confirmed', remarks?: string) =>
     request<{ ticket: Ticket; message: string }>(`/api/tickets/${id}/status`, {
       method: 'POST', body: JSON.stringify({ status, remarks }),
     }),

@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { formatDistanceToNow, format } from 'date-fns'
 import {
   ArrowLeft, MapPin, Calendar, User as UserIcon, Wrench, Clock, Tag,
-  History, UserPlus, Play, CheckCircle2, Mail, Loader2, Building2,
+  History, UserPlus, Play, CheckCircle2, Mail, Loader2, Building2, ShieldCheck,
 } from 'lucide-react'
 
 export function TicketDetailView() {
@@ -77,7 +77,7 @@ export function TicketDetailView() {
     }
   }
 
-  const updateStatus = async (status: 'in_progress' | 'resolved') => {
+  const updateStatus = async (status: 'in_progress' | 'resolved' | 'confirmed') => {
     if (!ticket) return
     setUpdating(true)
     try {
@@ -104,8 +104,11 @@ export function TicketDetailView() {
 
   const isAdmin = user.role === 'admin'
   const isAssignedTech = ticket.assignedToId === user.id
+  const isIssuer = ticket.issuedById === user.id
   const canUpdateStatus = (isAssignedTech || isAdmin) && !!ticket.assignedToId
   const canAssign = isAdmin
+  // Issuer confirms resolution: only when status is 'resolved' and user is the issuer or admin
+  const canConfirmResolution = ticket.currentStatus === 'resolved' && (isIssuer || isAdmin)
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
@@ -147,43 +150,72 @@ export function TicketDetailView() {
         </CardContent>
       </Card>
 
-      {/* Status actions */}
-      {canUpdateStatus && (
+      {/* Status actions — technician/admin update OR issuer confirm resolution */}
+      {(canUpdateStatus || canConfirmResolution) && (
         <Card className="glass border-0">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-primary" /> Update Status
+              {canConfirmResolution ? (
+                <><ShieldCheck className="h-4 w-4 text-cyan-500" /> Confirm Resolution</>
+              ) : (
+                <><Wrench className="h-4 w-4 text-primary" /> Update Status</>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="remarks" className="text-xs">Remarks (optional)</Label>
-              <Textarea id="remarks" value={statusRemarks}
-                onChange={(e) => setStatusRemarks(e.target.value)}
-                placeholder="e.g. Awaiting replacement RAM module"
-                className="bg-background/40 min-h-[60px]" maxLength={500}
-                disabled={updating} />
-            </div>
+            {/* Issuer confirmation prompt when technician marked resolved */}
+            {canConfirmResolution && (
+              <div className="rounded-lg bg-cyan-500/10 border border-cyan-500/30 p-3 text-sm text-cyan-700 dark:text-cyan-300">
+                <div className="flex items-center gap-1.5 font-medium mb-1">
+                  <ShieldCheck className="h-4 w-4" /> Awaiting your confirmation
+                </div>
+                The technician has marked this ticket as <strong>Resolved</strong>. Please verify the fix and confirm to close the ticket.
+              </div>
+            )}
+
+            {canUpdateStatus && (
+              <div className="space-y-1.5">
+                <Label htmlFor="remarks" className="text-xs">Remarks (optional)</Label>
+                <Textarea id="remarks" value={statusRemarks}
+                  onChange={(e) => setStatusRemarks(e.target.value)}
+                  placeholder={canConfirmResolution ? "e.g. Issue confirmed fixed, thank you" : "e.g. Awaiting replacement RAM module"}
+                  className="bg-background/40 min-h-[60px]" maxLength={500}
+                  disabled={updating} />
+              </div>
+            )}
             <div className="flex flex-wrap gap-2">
-              {ticket.currentStatus === 'issued' && (
+              {/* Technician actions */}
+              {canUpdateStatus && ticket.currentStatus === 'issued' && (
                 <Button onClick={() => updateStatus('in_progress')} disabled={updating} variant="secondary">
                   {updating ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Play className="h-4 w-4 mr-1.5" />}
                   Start Work (In Progress)
                 </Button>
               )}
-              {ticket.currentStatus === 'in_progress' && (
+              {canUpdateStatus && ticket.currentStatus === 'in_progress' && (
                 <Button onClick={() => updateStatus('resolved')} disabled={updating} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                   {updating ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
                   Mark as Resolved
                 </Button>
               )}
-              {ticket.currentStatus === 'resolved' && (
+              {/* Issuer confirms resolution */}
+              {canConfirmResolution && (
+                <Button onClick={() => updateStatus('confirmed')} disabled={updating} className="bg-cyan-600 hover:bg-cyan-700 text-white">
+                  {updating ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <ShieldCheck className="h-4 w-4 mr-1.5" />}
+                  Confirm Resolution & Close
+                </Button>
+              )}
+              {ticket.currentStatus === 'confirmed' && (
+                <div className="text-sm text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4" /> Resolution confirmed by issuer. Ticket is closed.
+                </div>
+              )}
+              {ticket.currentStatus === 'resolved' && !canConfirmResolution && (
                 <div className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4" /> This ticket has been resolved.
+                  <CheckCircle2 className="h-4 w-4" /> Resolved — awaiting issuer confirmation.
                 </div>
               )}
             </div>
-            {!canUpdateStatus && ticket.assignedToId && !isAssignedTech && !isAdmin && (
+            {!canUpdateStatus && !canConfirmResolution && ticket.assignedToId && !isAssignedTech && !isAdmin && (
               <p className="text-xs text-muted-foreground">Only the assigned technician or an admin can update the status.</p>
             )}
           </CardContent>

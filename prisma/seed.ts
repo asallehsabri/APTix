@@ -56,9 +56,10 @@ async function main() {
   // --- Tickets (PRD §4.2, §7.3, §8) ---
   const catMap = Object.fromEntries(categories.map((c) => [c.name, c.id]))
   const locations = [
-    'Bilik Latihan 1', 'Bilik Latihan 2', 'Bilik Latihan 3',
-    'Makmal Komputer 1', 'Makmal Komputer 2', 'Dewan Utama',
-    'Bengkel Elektrik', 'Pusat Sumber', 'Pejabat Pentadbiran', 'Bilik Kuliah A',
+    'Pejabat Pengarah', 'Zon Eksekutif', 'Auditorium', 'Dewan Serbaguna',
+    'Pusat Sumber', 'Asrama', 'Surau', 'Bahagian Mekatronik',
+    'Bahagian Telekomunikasi', 'Bahagian CADD Seni Bina', 'Bahagian CADD Mekanikal',
+    'Bahagian Kimpalan', 'Bahagian Fabrikasi', 'Bahagian Pembuatan (Pemesinan)',
   ]
   const summaries = [
     'Projector does not display image from laptop',

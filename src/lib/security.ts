@@ -77,6 +77,21 @@ export function canUpdateTicketStatus(
   return false
 }
 
+/**
+ * Can the user CONFIRM a ticket's resolution? (Issuer confirms resolution flow)
+ * Only the issuer who created the ticket (or an admin) may confirm resolution.
+ * The ticket must currently be in 'resolved' status.
+ */
+export function canConfirmResolution(
+  user: SafeUser,
+  ticket: { issuedById: string; assignedToId: string | null; currentStatus: string }
+): boolean {
+  if (ticket.currentStatus !== 'resolved') return false
+  if (user.role === 'admin') return true
+  // The issuer who created the ticket may confirm
+  return ticket.issuedById === user.id
+}
+
 // ============================================================================
 // Input validation (PRD §5 Security — defense against injection / malformed input)
 // ============================================================================
@@ -119,7 +134,7 @@ export const schemas = {
     assignedToId: z.string().min(1),
   }),
   updateStatus: z.object({
-    status: z.enum(['in_progress', 'resolved']),
+    status: z.enum(['in_progress', 'resolved', 'confirmed']),
     remarks: z.string().max(500).optional().nullable(),
   }),
   createCategory: z.object({

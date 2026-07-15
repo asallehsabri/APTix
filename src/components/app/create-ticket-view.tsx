@@ -12,12 +12,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner'
 import { Send, Loader2, Tag, MapPin, CalendarDays, FileText, CheckCircle2, ArrowLeft } from 'lucide-react'
 
+// ADTEC Pedas locations (alphabetical order)
 const LOCATIONS = [
-  'Bilik Latihan 1', 'Bilik Latihan 2', 'Bilik Latihan 3', 'Bilik Latihan 4',
-  'Makmal Komputer 1', 'Makmal Komputer 2', 'Makmal Komputer 3',
-  'Dewan Utama', 'Bengkel Elektrik', 'Bengkel Mekanikal', 'Bengkel Welding',
-  'Pusat Sumber', 'Pejabat Pentadbiran', 'Bilik Kuliah A', 'Bilik Kuliah B',
-  'Asrama', 'Kantin', 'Surau', 'Other',
+  'Asrama',
+  'Auditorium',
+  'Bahagian CADD Mekanikal',
+  'Bahagian CADD Seni Bina',
+  'Bahagian Fabrikasi',
+  'Bahagian Kimpalan',
+  'Bahagian Mekatronik',
+  'Bahagian Pembuatan (Pemesinan)',
+  'Bahagian Telekomunikasi',
+  'Dewan Serbaguna',
+  'Pejabat Pengarah',
+  'Pusat Sumber',
+  'Surau',
+  'Zon Eksekutif',
 ]
 
 export function CreateTicketView() {

@@ -7,11 +7,14 @@ const LABELS: Record<string, string> = {
   issued: 'Issued',
   in_progress: 'In Progress',
   resolved: 'Resolved',
+  confirmed: 'Confirmed',
   assigned: 'Assigned',
 }
 
+const STATUS_CLASSES = ['issued', 'in_progress', 'resolved', 'confirmed']
+
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
-  const cls = ['issued', 'in_progress', 'resolved'].includes(status)
+  const cls = STATUS_CLASSES.includes(status)
     ? `status-${status}`
     : 'bg-muted text-muted-foreground border-border'
   return (

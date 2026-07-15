@@ -1,14 +1,18 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import {
-  requirePasswordChanged, canUpdateTicketStatus, schemas, validateBody, ok, fail,
+  requirePasswordChanged, canUpdateTicketStatus, canConfirmResolution,
+  schemas, validateBody, ok, fail,
 } from '@/lib/security'
-import { emitTicketChange, logNotification, buildResolutionEmail } from '@/lib/ticket-utils'
+import {
+  emitTicketChange, logNotification, buildResolutionEmail, buildConfirmationEmail,
+} from '@/lib/ticket-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
-// POST /api/tickets/[id]/status — assigned technician (or admin) updates status
-// (PRD FR-4.1, FR-4.2, FR-4.3, FR-4.4, FR-4.5, FR-5.3, AC-4, AC-5)
+// POST /api/tickets/[id]/status — status transitions
+//   - technician/admin: issued -> in_progress -> resolved   (PRD FR-4.1, FR-4.2, AC-4)
+//   - issuer/admin:     resolved -> confirmed               (Issuer confirms resolution)
 export async function POST(req: NextRequest, { params }: Params) {
   const user = await requirePasswordChanged()
   if (user instanceof Response) return user
@@ -28,6 +32,62 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
   if (!ticket) return fail('Ticket not found', 404)
 
+  const newStatus = parsed.data.status
+
+  // ===== Issuer confirms resolution =====
+  if (newStatus === 'confirmed') {
+    if (!canConfirmResolution(user, ticket)) {
+      return fail(
+        'Only the issuer who created this ticket (or an admin) can confirm the resolution, and only when the ticket is Resolved.',
+        403
+      )
+    }
+    const updated = await db.ticket.update({
+      where: { id },
+      data: { currentStatus: 'confirmed' },
+      include: {
+        category: true,
+        issuedBy: { select: { id: true, fullName: true, email: true } },
+        assignedTo: { select: { id: true, fullName: true, email: true } },
+      },
+    })
+    await db.ticketStatusHistory.create({
+      data: {
+        ticketId: ticket.id,
+        status: 'confirmed',
+        remarks: parsed.data.remarks || 'Resolution confirmed by issuer',
+        actorId: user.id,
+      },
+    })
+    // Email the assigned technician + all active admins that the ticket is confirmed/closed
+    const admins = await db.profile.findMany({
+      where: { role: 'admin', isActive: true },
+      select: { email: true },
+    })
+    const recipients = [
+      ...(ticket.assignedTo?.email ? [ticket.assignedTo.email] : []),
+      ...admins.map((a) => a.email),
+    ]
+    const email = buildConfirmationEmail({
+      ticketNo: ticket.ticketNo,
+      summary: ticket.summary,
+      location: ticket.location,
+      categoryName: ticket.category.name,
+      confirmedAt: new Date(),
+      issuerName: ticket.issuedBy.fullName,
+    })
+    await logNotification({
+      ticketId: ticket.id,
+      type: 'confirmation',
+      recipients,
+      subject: email.subject,
+      body: email.body,
+    })
+    await emitTicketChange('ticket_status_changed', ticket.id)
+    return ok({ ticket: updated, message: 'Resolution confirmed. Ticket is now closed.' })
+  }
+
+  // ===== Technician/admin status update (issued -> in_progress -> resolved) =====
   if (!canUpdateTicketStatus(user, ticket)) {
     return fail('Only the assigned technician or an admin can update this ticket.', 403)
   }
@@ -35,7 +95,6 @@ export async function POST(req: NextRequest, { params }: Params) {
     return fail('Ticket must be assigned before the status can be updated.', 400)
   }
 
-  const newStatus = parsed.data.status
   // State transition rules (PRD §8.1): issued -> in_progress -> resolved
   if (newStatus === 'resolved' && ticket.currentStatus === 'issued') {
     return fail('A ticket must be In Progress before it can be Resolved.', 400)

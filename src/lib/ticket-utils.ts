@@ -21,13 +21,14 @@ export async function generateTicketNo(): Promise<string> {
   return `${prefix}${String(next).padStart(6, '0')}`
 }
 
-export type TicketStatus = 'issued' | 'in_progress' | 'resolved'
+export type TicketStatus = 'issued' | 'in_progress' | 'resolved' | 'confirmed'
 
-/** Colour mapping per PRD §8 (Issued=Red, In Progress=Yellow, Resolved=Green). */
-export const STATUS_COLORS: Record<TicketStatus, { label: string; color: 'red' | 'yellow' | 'green' }> = {
+/** Colour mapping per PRD §8 (Issued=Red, In Progress=Yellow, Resolved=Green, Confirmed=Teal). */
+export const STATUS_COLORS: Record<TicketStatus, { label: string; color: 'red' | 'yellow' | 'green' | 'teal' }> = {
   issued: { label: 'Issued', color: 'red' },
   in_progress: { label: 'In Progress', color: 'yellow' },
   resolved: { label: 'Resolved', color: 'green' },
+  confirmed: { label: 'Confirmed', color: 'teal' },
 }
 
 /**
@@ -56,7 +57,7 @@ export async function emitTicketChange(event: 'ticket_created' | 'ticket_updated
  */
 export async function logNotification(params: {
   ticketId: string
-  type: 'assignment' | 'resolution'
+  type: 'assignment' | 'resolution' | 'confirmation'
   recipients: string[]
   subject: string
   body: string
@@ -99,6 +100,21 @@ export function buildResolutionEmail(ticket: {
 }) {
   return {
     subject: `[APTix] Ticket ${ticket.ticketNo} Resolved — ${ticket.categoryName} Issue at ${ticket.location}`,
-    body: `Your ICT ticket has been resolved.\n\nTicket No: ${ticket.ticketNo}\nCategory: ${ticket.categoryName}\nSummary: ${ticket.summary}\nLocation: ${ticket.location}\nResolved By: ${ticket.technicianName}\nResolved At: ${ticket.resolvedAt.toLocaleString()}\n\nPlease log in to APTix to view the full status history.\n\n— APTix System, ADTEC Pedas ICT Unit`,
+    body: `Your ICT ticket has been resolved by the technician.\n\nTicket No: ${ticket.ticketNo}\nCategory: ${ticket.categoryName}\nSummary: ${ticket.summary}\nLocation: ${ticket.location}\nResolved By: ${ticket.technicianName}\nResolved At: ${ticket.resolvedAt.toLocaleString()}\n\nPlease log in to APTix to review and CONFIRM the resolution. The ticket will remain in "Resolved" status until you confirm it.\n\n— APTix System, ADTEC Pedas ICT Unit`,
+  }
+}
+
+/** Build the confirmation email subject/body (sent when issuer confirms resolution). */
+export function buildConfirmationEmail(ticket: {
+  ticketNo: string
+  summary: string
+  location: string
+  categoryName: string
+  confirmedAt: Date
+  issuerName: string
+}) {
+  return {
+    subject: `[APTix] Ticket ${ticket.ticketNo} Confirmed & Closed — ${ticket.categoryName} Issue at ${ticket.location}`,
+    body: `The issuer has confirmed the resolution and this ticket is now closed.\n\nTicket No: ${ticket.ticketNo}\nCategory: ${ticket.categoryName}\nSummary: ${ticket.summary}\nLocation: ${ticket.location}\nConfirmed By: ${ticket.issuerName}\nConfirmed At: ${ticket.confirmedAt.toLocaleString()}\n\nNo further action is required.\n\n— APTix System, ADTEC Pedas ICT Unit`,
   }
 }

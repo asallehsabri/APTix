@@ -22,11 +22,12 @@ export async function GET(req: NextRequest) {
     where = { issuedById: user.id }
   }
 
-  // Status counts (colour-coded Red/Yellow/Green — PRD §8, FR-6.1)
+  // Status counts (colour-coded Red/Yellow/Green/Teal — PRD §8, FR-6.1)
   const statusCounts = {
     issued: await db.ticket.count({ where: { ...where, currentStatus: 'issued' } }),
     in_progress: await db.ticket.count({ where: { ...where, currentStatus: 'in_progress' } }),
     resolved: await db.ticket.count({ where: { ...where, currentStatus: 'resolved' } }),
+    confirmed: await db.ticket.count({ where: { ...where, currentStatus: 'confirmed' } }),
   }
 
   // Category breakdown (FR-6.5)
@@ -100,7 +101,7 @@ export async function GET(req: NextRequest) {
     byCategory,
     byLocation,
     recent,
-    total: statusCounts.issued + statusCounts.in_progress + statusCounts.resolved,
+    total: statusCounts.issued + statusCounts.in_progress + statusCounts.resolved + statusCounts.confirmed,
     ...adminExtras,
   })
 }

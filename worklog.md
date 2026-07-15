@@ -89,3 +89,22 @@ Stage Summary:
 - ✅ 5 existing issuer accounts migrated, 2 admins + 3 technicians unchanged
 - ✅ All role-based access control (RLS) still works correctly with new role value
 - ✅ Zero remaining "Teacher" references in source code
+
+---
+Task ID: adjust-1
+Agent: Orchestrator
+Task: Four adjustments (locations, confirm-resolution flow, RLS verification, bulk user upload)
+
+Work Log:
+- Adjustment 1 (Locations): Replaced LOCATIONS in create-ticket-view with 14 ADTEC Pedas locations (Pejabat Pengarah, Zon Eksekutif, Auditorium, Dewan Serbaguna, Pusat Sumber, Asrama, Surau, Bahagian Mekatronik, Bahagian Telekomunikasi, Bahagian CADD Seni Bina, Bahagian CADD Mekanikal, Bahagian Kimpalan, Bahagian Fabrikasi, Bahagian Pembuatan (Pemesinan)) in alphabetical order. Updated seed.ts + migrated 20 existing tickets to new location names.
+- Adjustment 2 (Confirm resolution flow): Added new 'confirmed' status. Workflow is now issued → in_progress → resolved (technician) → confirmed (issuer). Added canConfirmResolution() security helper (only issuer who created ticket OR admin, only when status='resolved'). Updated status API route to handle 'confirmed' transition with confirmation email to technician+admins. Added CSS .status-confirmed (teal/cyan). Updated StatusBadge, dashboard (5 stat tiles + pie chart), tickets-view status filter, ticket-detail-view with "Confirm Resolution & Close" button for issuers. Verified full flow: issuer creates → admin assigns → tech in_progress → tech resolved → issuer confirms. Issuer correctly blocked from in_progress (403).
+- Adjustment 3 (RLS for status reports): Verified canAccessTicket already enforces — issuer sees only own tickets, technician sees only assigned+own, admin sees all. Both ticket detail and history routes enforce this. No changes needed (already correct).
+- Adjustment 4 (Bulk user upload): Created POST /api/users/bulk route (validates all rows, checks duplicates within sheet + DB, creates valid users with temp passwords, returns success+failures). Added bulkCreateUsers to api-client. Added "Bulk Upload" button + dialog in user-management-view with: CSV template download, file upload, preview table, submit, results view (summary tiles + credentials table with copy-all + failures table). Verified: 6-row test (3 valid, 3 invalid) → 3 created with temp passwords, 3 correctly rejected (bad email, duplicate, bad role).
+
+Stage Summary:
+- ✅ 14 ADTEC Pedas locations in alphabetical order (verified in browser dropdown)
+- ✅ Confirm-resolution flow works end-to-end (verified in browser: "Confirm Resolution & Close" button → status "Confirmed" → confirmation email logged)
+- ✅ RLS verified — issuer/technician see only their own tickets
+- ✅ Bulk user upload works (CSV template + preview + results with credentials)
+- ✅ Dashboard shows 5 stat tiles (Total, Issued, In Progress, Resolved, Confirmed)
+- ✅ Lint clean, no dev log errors, server healthy

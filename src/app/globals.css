@@ -91,6 +91,8 @@
   --status-yellow-bg: oklch(0.72 0.17 85 / 0.18);
   --status-green: oklch(0.6 0.15 155);
   --status-green-bg: oklch(0.6 0.15 155 / 0.14);
+  --status-confirmed: oklch(0.5 0.13 200);
+  --status-confirmed-bg: oklch(0.5 0.13 200 / 0.16);
 
   --sidebar: oklch(1 0 0 / 0.55);
   --sidebar-foreground: oklch(0.2 0.04 190);
@@ -140,6 +142,8 @@
   --status-yellow-bg: oklch(0.8 0.17 85 / 0.22);
   --status-green: oklch(0.72 0.15 155);
   --status-green-bg: oklch(0.72 0.15 155 / 0.2);
+  --status-confirmed: oklch(0.68 0.14 200);
+  --status-confirmed-bg: oklch(0.68 0.14 200 / 0.22);
 
   --sidebar: oklch(0.2 0.03 210 / 0.55);
   --sidebar-foreground: oklch(0.95 0.01 180);
@@ -244,9 +248,15 @@
     color: var(--status-green);
     border: 1px solid var(--status-green);
   }
+  .status-confirmed {
+    background: var(--status-confirmed-bg);
+    color: var(--status-confirmed);
+    border: 1px solid var(--status-confirmed);
+  }
   .status-dot-issued { background: var(--status-red); }
   .status-dot-in_progress { background: var(--status-yellow); }
   .status-dot-resolved { background: var(--status-green); }
+  .status-dot-confirmed { background: var(--status-confirmed); }
 
   /* Animated gradient text for the brand */
   .text-gradient {
